@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="TaskManagement.Api/TaskManagement.Api.csproj" Id="1c4f98ab-90ef-43f1-857a-bd44aa5ac066" />
+  <Project Path="TaskManagement.Business/TaskManagement.Business.csproj" Id="95b348fa-5ec1-4461-8b44-648f82162db9" />
+  <Project Path="TaskManagement.DataAccess/TaskManagement.DataAccess.csproj" Id="96a670c1-3570-4ac9-a053-42e01e718b8a" />
+</Solution>
