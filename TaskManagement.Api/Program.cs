@@ -17,6 +17,7 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddDbContext<TaskManagementDBContext>();
 
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

@@ -35,6 +35,5 @@ namespace TaskManagement.Api.Controllers
             return Ok(await _teamService.AddTeam(request));
         }
 
-
     }
 }
