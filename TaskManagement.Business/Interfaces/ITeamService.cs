@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TaskManagement.Business.Dtos;
+using TaskManagement.DataAccess.Models;
 
 namespace TaskManagement.Business.Interfaces
 {
@@ -11,6 +12,8 @@ namespace TaskManagement.Business.Interfaces
     {
         public Task<List<TeamDto>> GetAllTeams();
 
-        public Task<TeamDto> GetTeamById(int id);
+        public Task<List<TeamDto>> GetTeamByName(string name);
+
+        public Task<bool> AddTeam(TeamDto request);
     }
 }
