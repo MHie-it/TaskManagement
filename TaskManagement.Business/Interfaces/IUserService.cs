@@ -9,14 +9,14 @@ namespace TaskManagement.Business.Interfaces
 {
     public interface IUserService
     {
-        public Task<string?> RegisterUser(AddUserDto request);
+        public Task<string?> RegisterUserAsync(AddUserDto request);
 
-        public Task<List<UserDto>> GetAllUsers();
+        public Task<List<UserDto>> GetAllUsersAsync();
 
-        public Task<UserDto> GetUserById(int id);
+        public Task<UserDto> GetUserByIdAsync(int id);
 
-        public Task<List<UserDto>> GetAllUserByTeam(int teamid);
+        public Task<List<UserDto>> GetAllUserByTeamAsync(int teamid);
 
-        public Task<bool> UpdateUser(int id, UpdateUserDto request);
+        public Task<bool> UpdateUserAsync(int id, UpdateUserDto request);
     }
 }

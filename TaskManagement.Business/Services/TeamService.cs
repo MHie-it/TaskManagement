@@ -1,31 +1,23 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
-using TaskManagement.DataAccess.DBContext;
 using TaskManagement.DataAccess.Models;
+using TaskManagement.DataAccess.Repositories;
 
 namespace TaskManagement.Business.Services
 {
     public class TeamService : ITeamService
     {
-        private readonly TaskManagementDBContext _context;
+        private readonly ITeamRepository _teamRepository;
         private readonly IMapper _mapper;
 
-        public TeamService(TaskManagementDBContext context, IMapper mapper)
+        public TeamService(ITeamRepository teamRepository, IMapper mapper)
         {
-            _context = context;
+            _teamRepository = teamRepository;
             _mapper = mapper;
         }
 
-        public async Task<bool> AddTeam(TeamDto request)
+        public async Task<bool> AddTeamAsync(TeamDto request)
         {
             try
             {
@@ -38,8 +30,8 @@ namespace TaskManagement.Business.Services
                     team.UpdatedAt = DateTime.UtcNow;
                     team.CreatedBy = "System";
                     team.UpdatedBy = "System";
-                    await _context.AddAsync<Team>(team);
-                    await _context.SaveChangesAsync();
+                    
+                    await _teamRepository.SaveChangesAsync(team);
                 }
             }
             catch (Exception ex)
@@ -50,16 +42,16 @@ namespace TaskManagement.Business.Services
             return false;
         }
 
-        public async Task<List<TeamDto>> GetAllTeams()
+        public async Task<List<TeamDto>> GetAllTeamsAsync()
         {
-            var listTeams = await _context.Teams.AsNoTracking().ToListAsync();
+            var listTeams = await _teamRepository.GetTeamsAsync();
             var data = _mapper.Map<List<TeamDto>>(listTeams);
             if (data != null && data.Any())
                 return data;
             return data ?? new List<TeamDto>();
         }
 
-        public async Task<List<TeamDto>> GetTeamByName(string name)
+        public async Task<List<TeamDto>> GetTeamByNameAsync(string name)
         {
             try
             {
@@ -69,7 +61,7 @@ namespace TaskManagement.Business.Services
                     name.Split(' ');
                 }
 
-                var teams = await _context.Teams.AsNoTracking().Where(t => t.Name.Contains(name)).ToListAsync();
+                var teams = await _teamRepository.GetTeamByNameAsync(name); 
 
                 if (teams == null)
                 {

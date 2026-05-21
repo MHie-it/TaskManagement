@@ -1,39 +1,34 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
-using TaskManagement.DataAccess.DBContext;
 using TaskManagement.DataAccess.Models;
+using TaskManagement.DataAccess.Repositories;
 
 namespace TaskManagement.Business.Services
 {
     public class UserService : IUserService
     {
-        private readonly TaskManagementDBContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public UserService(TaskManagementDBContext context, IMapper mapper)
+        public UserService(IMapper mapper, IUserRepository userRepository)
         {
-            _context = context;
             _mapper = mapper;
+            _userRepository = userRepository;
         }
 
-        public async Task<List<UserDto>> GetAllUserByTeam(int teamid)
+        public async Task<List<UserDto>> GetAllUserByTeamAsync(int teamId)
         {
             try
             {
-                var listUser = await _context.Users.AsNoTracking().Where(t => t.TeamId == teamid).ToListAsync();
+                var listUser = await _userRepository.GetAllUserByTeamAsync(teamId);
                 var data = _mapper.Map<List<UserDto>>(listUser);
+
                 if (data != null && data.Any())
                 {
                     return data;
                 }
+
                 return data ?? new List<UserDto>();
             }
             catch (Exception ex)
@@ -43,19 +38,19 @@ namespace TaskManagement.Business.Services
             }
         }
 
-        public async Task<List<UserDto>> GetAllUsers()
+        public async Task<List<UserDto>> GetAllUsersAsync()
         {
             try
             {
-                var listUser = await _context.Users.AsNoTracking().ToListAsync();
+                var listUser = await _userRepository.GetAllUsersAsync();
                 var data = _mapper.Map<List<UserDto>>(listUser);
+
                 if (data != null && data.Any())
                 {
                     return data;
                 }
 
                 return data ?? new List<UserDto>();
-
             }
             catch (Exception ex)
             {
@@ -64,11 +59,11 @@ namespace TaskManagement.Business.Services
             }
         }
 
-        public async Task<UserDto> GetUserById(int id)
+        public async Task<UserDto> GetUserByIdAsync(int id)
         {
             try
             {
-                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
+                var user = await _userRepository.GetUserByIdAsync(id);
                 if (user == null)
                 {
                     Console.WriteLine("User not found!!");
@@ -87,7 +82,7 @@ namespace TaskManagement.Business.Services
             }
         }
 
-        public async Task<string?> RegisterUser(AddUserDto request)
+        public async Task<string?> RegisterUserAsync(AddUserDto request)
         {
             try
             {
@@ -97,14 +92,14 @@ namespace TaskManagement.Business.Services
                     return null;
                 }
 
-                var checkUser = _context.Users.FirstOrDefault(u => u.UserName == request.UserName);
+                var checkUser = await _userRepository.GetUserAsync(request.UserName);
                 if (checkUser != null)
                 {
                     Console.WriteLine("User already exists!");
                     return null;
                 }
 
-                var checkEmail = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+                var checkEmail = await _userRepository.GetMailAsync(request.Email);
                 if (checkEmail != null)
                 {
                     Console.WriteLine("Email already exists!");
@@ -123,8 +118,7 @@ namespace TaskManagement.Business.Services
                     regisUser.UpdatedBy = "System";
                     regisUser.isDeleted = false;
 
-                    await _context.AddAsync<User>(regisUser);
-                    await _context.SaveChangesAsync();
+                    await _userRepository.SaveChangesAsync(regisUser);
                 }
                 return regisUser.UserName;
             }
@@ -135,27 +129,27 @@ namespace TaskManagement.Business.Services
             }
         }
 
-        public async Task<bool> UpdateUser(int id, UpdateUserDto request)
+        public async Task<bool> UpdateUserAsync(int id, UpdateUserDto request)
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+                var user = await _userRepository.GetUserIdAsync(id);
 
-                var checkUserName = await _context.Users.FirstOrDefaultAsync(u => u.UserName == request.UserName && u.UserId != id);
+                var checkUserName = await _userRepository.GetUserAsync(request.UserName);
                 if (checkUserName != null)
                 {
                     Console.WriteLine("Username already exists!");
                     return false;
                 }
 
-                var checkEmail = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.UserId != id);
+                var checkEmail = await _userRepository.GetMailAsync(request.Email);
                 if (checkEmail != null)
                 {
                     Console.WriteLine("Email already exists!");
                     return false;
                 }
 
-                var checkPhone = await _context.Users.FirstOrDefaultAsync(u => u.Phone == request.Phone && u.UserId != id);
+                var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
                 if (checkPhone != null)
                 {
                     Console.WriteLine(" Your phone arealdy exists!");
@@ -178,7 +172,8 @@ namespace TaskManagement.Business.Services
                     user.UpdatedAt = DateTime.UtcNow;
                     user.CreatedBy = user.CreatedBy;
                     user.UpdatedBy = request.UserName;
-                    await _context.SaveChangesAsync();
+
+                    await _userRepository.SaveChangesAsync(user);
                 }
                 else
                 {
