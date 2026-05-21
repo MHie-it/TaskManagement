@@ -32,5 +32,17 @@ namespace TaskManagement.Api.Controllers
         {
             return Ok(await _userService.RegisterUser(request));
         }
+
+        [HttpGet("GetAllUserByTeam")]
+        public async Task<IActionResult> GetAllUserByTeam(int teamid)
+        {
+            return Ok(await _userService.GetAllUserByTeam(teamid));
+        }
+
+        [HttpPut("UpdateUser/{id}")]
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto request)
+        {
+            return Ok(await _userService.UpdateUser(id,request));
+        }
     }
 }

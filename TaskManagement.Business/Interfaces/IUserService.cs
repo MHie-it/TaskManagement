@@ -14,5 +14,9 @@ namespace TaskManagement.Business.Interfaces
         public Task<List<UserDto>> GetAllUsers();
 
         public Task<UserDto> GetUserById(int id);
+
+        public Task<List<UserDto>> GetAllUserByTeam(int teamid);
+
+        public Task<bool> UpdateUser(int id, UpdateUserDto request);
     }
 }

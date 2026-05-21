@@ -15,5 +15,7 @@ namespace TaskManagement.Business.Interfaces
         public Task<List<TeamDto>> GetTeamByName(string name);
 
         public Task<bool> AddTeam(TeamDto request);
+
+        
     }
 }
