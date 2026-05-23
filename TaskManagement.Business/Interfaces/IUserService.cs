@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManagement.Business.Dtos;
+﻿using TaskManagement.Business.Dtos;
 
 namespace TaskManagement.Business.Interfaces
 {
@@ -18,5 +13,7 @@ namespace TaskManagement.Business.Interfaces
         public Task<List<UserDto>> GetAllUserByTeamAsync(int teamid);
 
         public Task<bool> UpdateUserAsync(int id, UpdateUserDto request);
+
+        public Task<bool> DeleteUserAsync(int userId);
     }
 }

@@ -173,12 +173,48 @@ namespace TaskManagement.Business.Services
                     user.CreatedBy = user.CreatedBy;
                     user.UpdatedBy = request.UserName;
 
-                    await _userRepository.SaveChangesAsync(user);
+                    await _userRepository.UpdateUserAsync(id);
                 }
                 else
                 {
                     Console.WriteLine("User not found!!");
                     return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteUserAsync(int userId)
+        {
+
+            try
+            {
+                var user = await _userRepository.GetUserIdAsync(userId);
+                if (user == null)
+                {
+                    Console.WriteLine("User notfound");
+                    return false;
+                }
+
+                var checkTask = await _userRepository.CheckUnTaskFinishesAsync(userId);
+                if (checkTask == true)
+                {
+                    Console.WriteLine(" User has unfinished tasks");
+                    return false;
+                }
+
+                if (user != null)
+                {
+                    user.isDeleted = true;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    user.CreatedBy = user.CreatedBy;
+
+                    await _userRepository.UpdateUserAsync(userId);
                 }
                 return true;
             }

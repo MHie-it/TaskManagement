@@ -1,8 +1,8 @@
-using TaskManagement.DataAccess.Models;
 using TaskManagement.Business.Services;
 using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.DBContext;
 using TaskManagement.Business.Mapping;
+using TaskManagement.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +15,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 builder.Services.AddDbContext<TaskManagementDBContext>();
+
+builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IUserService, UserService>();

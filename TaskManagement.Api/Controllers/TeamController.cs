@@ -20,19 +20,19 @@ namespace TaskManagement.Api.Controllers
         [HttpGet("GetAllTeams")]
         public async Task<IActionResult> GetAllTeams()
         {
-            return Ok(await _teamService.GetAllTeams());
+            return Ok(await _teamService.GetAllTeamsAsync());
         }
 
         [HttpGet("GetTeamByName")]
         public async Task<IActionResult> GetTeamByName(String request)
         {
-            return Ok(await _teamService.GetTeamByName(request));
+            return Ok(await _teamService.GetTeamByNameAsync(request));
         }
 
         [HttpPost("AddTeam")]
         public async Task<IActionResult> AddTeam(TeamDto request)
         {
-            return Ok(await _teamService.AddTeam(request));
+            return Ok(await _teamService.AddTeamAsync(request));
         }
 
     }

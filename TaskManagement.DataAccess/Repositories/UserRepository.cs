@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 using TaskManagement.DataAccess.DBContext;
 using TaskManagement.DataAccess.Models;
 
@@ -21,6 +22,10 @@ namespace TaskManagement.DataAccess.Repositories
         Task<User?> GetUserIdAsync(int id);
 
         Task<User?> GetPhoneAsync(string phone);
+
+        Task<bool> CheckUnTaskFinishesAsync(int userId);
+
+        Task<bool> UpdateUserAsync(int userid);
     }
 
     public class UserRepository : IUserRepository
@@ -39,7 +44,7 @@ namespace TaskManagement.DataAccess.Repositories
 
         public async Task<User?> GetUserByIdAsync(int id)
         {
-            return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id);
+            return await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == id && !u.isDeleted);
         }
 
         public async Task<List<User>> GetAllUserByTeamAsync(int teamId)
@@ -72,6 +77,18 @@ namespace TaskManagement.DataAccess.Repositories
         public async Task<User?> GetPhoneAsync(string phone)
         {
             return await _dbContext.Users.FirstOrDefaultAsync(u => u.Phone == phone);
+        }
+
+        public async Task<bool> CheckUnTaskFinishesAsync(int userId)
+        {
+            var UnFinishTasks = await _dbContext.Tasks.AsNoTracking().AnyAsync(t => t.UserId == userId && t.Status != "Finished");
+            return UnFinishTasks;
+        }
+
+        public async Task<bool> UpdateUserAsync(int userid)
+        {
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }
