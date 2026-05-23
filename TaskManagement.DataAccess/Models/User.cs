@@ -16,7 +16,7 @@ namespace TaskManagement.DataAccess.Models
 
         public int RoleId { get; set; }
 
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
 
 
         public string UserName { get; set; }
@@ -39,7 +39,7 @@ namespace TaskManagement.DataAccess.Models
 
         public Role Role { get; set; }
 
-        public Team Team { get; set; }
+        public Team? Team { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -49,7 +49,7 @@ namespace TaskManagement.DataAccess.Models
 
         public string UpdatedBy { get; set; }
 
-        public ICollection<Task> Tasks { get; set; } = new List<Task>();
+        public ICollection<Task>? Tasks { get; set; } = new List<Task>();
     }
 }
 

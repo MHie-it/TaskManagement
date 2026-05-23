@@ -26,6 +26,6 @@ namespace TaskManagement.DataAccess.Models
 
         public string UpdatedBy { get; set; }
 
-        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<User>? Users { get; set; } = new List<User>();
     }
 }

@@ -14,7 +14,7 @@ namespace TaskManagement.DataAccess.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
 
         public string Title { get; set; }
 
@@ -40,6 +40,6 @@ namespace TaskManagement.DataAccess.Models
 
         public string UpdatedBy { get; set; }
 
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }
