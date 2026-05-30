@@ -26,6 +26,8 @@ namespace TaskManagement.DataAccess.Repositories
         Task<bool> CheckUnTaskFinishesAsync(int userId);
 
         Task<bool> UpdateUserAsync(int userid);
+
+        Task<bool> UpdateUserV2Async(User user);
     }
 
     public class UserRepository : IUserRepository
@@ -87,6 +89,13 @@ namespace TaskManagement.DataAccess.Repositories
 
         public async Task<bool> UpdateUserAsync(int userid)
         {
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateUserV2Async(User user)
+        {
+            _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
             return true;
         }

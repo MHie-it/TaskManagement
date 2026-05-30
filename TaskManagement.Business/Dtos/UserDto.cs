@@ -49,4 +49,10 @@ namespace TaskManagement.Business.Dtos
 
         public string? Gende { get; set; }
     }
+
+    public class AddUserToTeamDto
+    {
+        //public int UserId { get; set; }
+        public int TeamId { get; set; }
+    }
 }

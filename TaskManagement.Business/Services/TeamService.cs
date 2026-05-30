@@ -9,11 +9,13 @@ namespace TaskManagement.Business.Services
     public class TeamService : ITeamService
     {
         private readonly ITeamRepository _teamRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public TeamService(ITeamRepository teamRepository, IMapper mapper)
+        public TeamService(ITeamRepository teamRepository, IUserRepository userRepository, IMapper mapper)
         {
             _teamRepository = teamRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
@@ -30,7 +32,7 @@ namespace TaskManagement.Business.Services
                     team.UpdatedAt = DateTime.UtcNow;
                     team.CreatedBy = "System";
                     team.UpdatedBy = "System";
-                    
+
                     await _teamRepository.SaveChangesAsync(team);
                 }
             }
@@ -61,7 +63,7 @@ namespace TaskManagement.Business.Services
                     name.Split(' ');
                 }
 
-                var teams = await _teamRepository.GetTeamByNameAsync(name); 
+                var teams = await _teamRepository.GetTeamByNameAsync(name);
 
                 if (teams == null)
                 {
@@ -75,6 +77,48 @@ namespace TaskManagement.Business.Services
             {
                 Console.WriteLine(ex.Message);
                 return null;
+            }
+        }
+
+        public async Task<bool?> AddMemberAsync(int UserId,AddUserToTeamDto request)
+        {
+            try
+            {
+                var team = await _teamRepository.GetTeamByIdAsync(request.TeamId);
+                if (team == null)
+                {
+                    Console.WriteLine("Team not found !!");
+                    return false;
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(UserId);
+                if (user == null)
+                {
+                    Console.WriteLine("User not found !!");
+                    return false;
+                }
+
+                var checkUserInTeam = await _teamRepository.GetMemberToTeamAsync(request.TeamId, UserId);
+                if (checkUserInTeam == true)
+                {
+                    Console.WriteLine("User is already a member of the team !!");
+                    return false;
+                }
+
+                if (user != null)
+                {
+                    user.TeamId = request.TeamId;
+                    user.UpdatedAt = DateTime.UtcNow;
+                    user.UpdatedBy = user.UserName;
+                    await _userRepository.UpdateUserV2Async(user);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
             }
         }
     }

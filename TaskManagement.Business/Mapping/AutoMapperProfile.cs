@@ -14,6 +14,8 @@ namespace TaskManagement.Business.Mapping
             CreateMap<UserDto ,User>();
             CreateMap<User, UserDto>();
             CreateMap<AddUserDto, User>();
+            CreateMap<AddUserToTeamDto, User>();
+            CreateMap< User, AddUserToTeamDto>();
         }
     }
 }
