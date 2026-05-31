@@ -3,6 +3,7 @@ using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.DBContext;
 using TaskManagement.Business.Mapping;
 using TaskManagement.DataAccess.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
-builder.Services.AddDbContext<TaskManagementDBContext>();
+builder.Services.AddDbContext<TaskManagementDBContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<ITeamRepository, TeamRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

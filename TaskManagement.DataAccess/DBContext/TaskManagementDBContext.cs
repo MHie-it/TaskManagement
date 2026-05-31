@@ -21,13 +21,6 @@ namespace TaskManagement.DataAccess.DBContext
         public DbSet<Models.Team> Teams { get; set; }
         public DbSet<Models.Task> Tasks { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-
-            optionsBuilder.UseSqlServer("Server=DESKTOP-73FDPI4;Database=TaskManagement;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;");
-
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
