@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using TaskManagement.Business.Dtos;
+using TaskManagement.Business.Helpers;
 using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
@@ -28,10 +29,7 @@ namespace TaskManagement.Business.Services
                 var team = _mapper.Map<Team>(request);
                 if (team != null)
                 {
-                    team.CreatedAt = DateTime.UtcNow;
-                    team.UpdatedAt = DateTime.UtcNow;
-                    team.CreatedBy = "System";
-                    team.UpdatedBy = "System";
+                    AuditHelper.SetCreateAudit(team, "System");
 
                     await _teamRepository.AddTeamAsync(team);
                 }
@@ -108,8 +106,7 @@ namespace TaskManagement.Business.Services
                 if (user != null)
                 {
                     user.TeamId = request.TeamId;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.UpdatedBy = user.UserName;
+                    AuditHelper.SetUpdateAudit(user, user.UserName);
                     await _userRepository.UpdateUserAsync(user);
                 }
 

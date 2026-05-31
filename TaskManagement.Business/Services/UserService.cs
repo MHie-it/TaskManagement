@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
+using TaskManagement.Business.Helpers;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
 
@@ -112,10 +113,7 @@ namespace TaskManagement.Business.Services
                 if (regisUser != null)
                 {
                     regisUser.RoleId = defaultRole;
-                    regisUser.CreatedAt = DateTime.UtcNow;
-                    regisUser.UpdatedAt = DateTime.UtcNow;
-                    regisUser.CreatedBy = "System";
-                    regisUser.UpdatedBy = "System";
+                    AuditHelper.SetCreateAudit(regisUser, "System");
                     regisUser.isDeleted = false;
 
                     await _userRepository.AddUserAsync(regisUser);
@@ -168,10 +166,7 @@ namespace TaskManagement.Business.Services
                     user.Address = request.Address ?? user.Address;
                     user.isDeleted = request.isDeleted ?? user.isDeleted;
                     user.Gende = request.Gende ?? user.Gende;
-                    user.CreatedAt = user.CreatedAt;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.CreatedBy = user.CreatedBy;
-                    user.UpdatedBy = request.UserName;
+                    AuditHelper.SetUpdateAudit(user, user.UserName);
 
                     await _userRepository.UpdateUserAsync(user);
                 }
@@ -211,8 +206,7 @@ namespace TaskManagement.Business.Services
                 if (user != null)
                 {
                     user.isDeleted = true;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.CreatedBy = user.CreatedBy;
+                    AuditHelper.SetUpdateAudit(user, user.UserName);
 
                     await _userRepository.UpdateUserAsync(user);
                 }
