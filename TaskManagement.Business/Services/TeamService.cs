@@ -33,7 +33,7 @@ namespace TaskManagement.Business.Services
                     team.CreatedBy = "System";
                     team.UpdatedBy = "System";
 
-                    await _teamRepository.SaveChangesAsync(team);
+                    await _teamRepository.AddTeamAsync(team);
                 }
             }
             catch (Exception ex)
@@ -110,7 +110,7 @@ namespace TaskManagement.Business.Services
                     user.TeamId = request.TeamId;
                     user.UpdatedAt = DateTime.UtcNow;
                     user.UpdatedBy = user.UserName;
-                    await _userRepository.UpdateUserV2Async(user);
+                    await _userRepository.UpdateUserAsync(user);
                 }
 
                 return true;

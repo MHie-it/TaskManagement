@@ -118,7 +118,7 @@ namespace TaskManagement.Business.Services
                     regisUser.UpdatedBy = "System";
                     regisUser.isDeleted = false;
 
-                    await _userRepository.SaveChangesAsync(regisUser);
+                    await _userRepository.AddUserAsync(regisUser);
                 }
                 return regisUser.UserName;
             }
@@ -136,21 +136,21 @@ namespace TaskManagement.Business.Services
                 var user = await _userRepository.GetUserIdAsync(id);
 
                 var checkUserName = await _userRepository.GetUserAsync(request.UserName);
-                if (checkUserName != null)
+                if (checkUserName != null && checkUserName.UserId != id)
                 {
                     Console.WriteLine("Username already exists!");
                     return false;
                 }
 
                 var checkEmail = await _userRepository.GetMailAsync(request.Email);
-                if (checkEmail != null)
+                if (checkEmail != null && checkEmail.UserId != id)
                 {
                     Console.WriteLine("Email already exists!");
                     return false;
                 }
 
                 var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
-                if (checkPhone != null)
+                if (checkPhone != null && checkPhone.UserId != id)
                 {
                     Console.WriteLine(" Your phone arealdy exists!");
                     return false;
@@ -173,7 +173,7 @@ namespace TaskManagement.Business.Services
                     user.CreatedBy = user.CreatedBy;
                     user.UpdatedBy = request.UserName;
 
-                    await _userRepository.UpdateUserAsync(id);
+                    await _userRepository.UpdateUserAsync(user);
                 }
                 else
                 {
@@ -214,7 +214,7 @@ namespace TaskManagement.Business.Services
                     user.UpdatedAt = DateTime.UtcNow;
                     user.CreatedBy = user.CreatedBy;
 
-                    await _userRepository.UpdateUserAsync(userId);
+                    await _userRepository.UpdateUserAsync(user);
                 }
                 return true;
             }

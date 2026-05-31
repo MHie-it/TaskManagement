@@ -6,7 +6,7 @@ namespace TaskManagement.DataAccess.Repositories
 {
     public interface ITeamRepository
     {
-        Task<Team?> SaveChangesAsync(Team team);
+        Task<Team?> AddTeamAsync(Team team);
 
         Task<List<Team>> GetTeamsAsync();
 
@@ -26,7 +26,7 @@ namespace TaskManagement.DataAccess.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Team?> SaveChangesAsync(Team team)
+        public async Task<Team?> AddTeamAsync(Team team)
         {
             await _dbContext.AddAsync<Team>(team);
             await _dbContext.SaveChangesAsync();

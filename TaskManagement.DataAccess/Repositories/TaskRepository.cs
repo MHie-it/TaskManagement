@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManagement.DataAccess.DBContext;
-using TaskManagement.DataAccess.Models;
 using Task = TaskManagement.DataAccess.Models.Task;
 
 
