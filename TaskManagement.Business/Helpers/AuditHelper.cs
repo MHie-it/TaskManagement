@@ -16,5 +16,9 @@
             entity.UpdatedBy = currentUser;
         }
 
+        internal static void SetCreateAudit(Task task, int usertId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
