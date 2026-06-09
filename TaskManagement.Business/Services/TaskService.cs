@@ -85,9 +85,11 @@ namespace TaskManagement.Business.Services
 
         public async Task<bool?> UpdateTaskAsync(int id, TaskDto request)
         {
-            try {
+            try
+            {
                 var task = await _taskRepository.GetTaskByIdAsync(id);
-                if (task == null) {
+                if (task == null)
+                {
                     Console.WriteLine("Task not found.");
                     return false;
                 }
@@ -99,7 +101,8 @@ namespace TaskManagement.Business.Services
                     return false;
                 }
 
-                if (task != null) {
+                if (task != null)
+                {
                     task.Title = request.Title ?? task.Title;
                     task.Description = request.Description ?? task.Description;
                     task.UserId = request.UserId > 0 ? request.UserId : task.UserId;
@@ -115,7 +118,9 @@ namespace TaskManagement.Business.Services
                 Console.WriteLine("Task updated successfully.");
                 return true;
 
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.Message);
                 return false;
             }
