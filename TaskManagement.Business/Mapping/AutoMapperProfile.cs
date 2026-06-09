@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TaskManagement.Business.Dtos;
 using TaskManagement.DataAccess.Models;
+using Task = TaskManagement.DataAccess.Models.Task;
 
 namespace TaskManagement.Business.Mapping
 {
@@ -16,6 +17,9 @@ namespace TaskManagement.Business.Mapping
             CreateMap<AddUserDto, User>();
             CreateMap<AddUserToTeamDto, User>();
             CreateMap< User, AddUserToTeamDto>();
+
+            CreateMap<TaskDto, Task>(); 
+            CreateMap<Task, TaskDto>();
         }
     }
 }

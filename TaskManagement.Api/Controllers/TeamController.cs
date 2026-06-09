@@ -36,8 +36,9 @@ namespace TaskManagement.Api.Controllers
         }
 
         [HttpPut("AddMember")]
-        public async Task<IActionResult> AddMember(int UserId,[FromBody] AddUserToTeamDto request) {
-            return Ok(await _teamService.AddMemberAsync(UserId,request));
+        public async Task<IActionResult> AddMember(int UserId, [FromBody] AddUserToTeamDto request)
+        {
+            return Ok(await _teamService.AddMemberAsync(UserId, request));
         }
 
     }
