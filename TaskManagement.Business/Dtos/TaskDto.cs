@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaskManagement.Business.Dtos
 {
-    public class TeamDto
+    internal class TaskDto
     {
-        public string Name { get; set;  }
-
-        public string Description { get; set; } 
     }
-
 }

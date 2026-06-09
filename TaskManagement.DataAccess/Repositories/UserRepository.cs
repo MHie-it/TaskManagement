@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata;
 using TaskManagement.DataAccess.DBContext;
 using TaskManagement.DataAccess.Models;
 
@@ -13,7 +12,7 @@ namespace TaskManagement.DataAccess.Repositories
 
         Task<List<User>> GetAllUserByTeamAsync(int teamId);
 
-        Task<bool> SaveChangesAsync(User regisUser);
+        Task<bool> AddUserAsync(User regisUser);
 
         Task<User?> GetMailAsync(string email);
 
@@ -25,7 +24,7 @@ namespace TaskManagement.DataAccess.Repositories
 
         Task<bool> CheckUnTaskFinishesAsync(int userId);
 
-        Task<bool> UpdateUserAsync(int userid);
+        Task<bool> UpdateUserAsync(User user);
     }
 
     public class UserRepository : IUserRepository
@@ -52,11 +51,11 @@ namespace TaskManagement.DataAccess.Repositories
             return await _dbContext.Users.AsNoTracking().Where(t => t.TeamId == teamId).ToListAsync();
         }
 
-        public async Task<bool> SaveChangesAsync(User regisUser)
+        public async Task<bool> AddUserAsync(User regisUser)
         {
             await _dbContext.AddAsync(regisUser);
-            await _dbContext.SaveChangesAsync();
-            return true;
+            var result =await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<User?> GetUserAsync(string user)
@@ -85,10 +84,11 @@ namespace TaskManagement.DataAccess.Repositories
             return UnFinishTasks;
         }
 
-        public async Task<bool> UpdateUserAsync(int userid)
+        public async Task<bool> UpdateUserAsync(User user)
         {
-            await _dbContext.SaveChangesAsync();
-            return true;
+            _dbContext.Users.Update(user);
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
     }
 }

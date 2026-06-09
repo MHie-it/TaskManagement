@@ -1,10 +1,5 @@
 ﻿using TaskManagement.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TaskManagement.DataAccess.DBContext
 {
@@ -25,13 +20,6 @@ namespace TaskManagement.DataAccess.DBContext
         public DbSet<Models.Role> Roles { get; set; }
         public DbSet<Models.Team> Teams { get; set; }
         public DbSet<Models.Task> Tasks { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-
-            optionsBuilder.UseSqlServer("Server=DESKTOP-73FDPI4;Database=TaskManagement;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;");
-
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
+using TaskManagement.Business.Helpers;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
 
@@ -112,13 +113,10 @@ namespace TaskManagement.Business.Services
                 if (regisUser != null)
                 {
                     regisUser.RoleId = defaultRole;
-                    regisUser.CreatedAt = DateTime.UtcNow;
-                    regisUser.UpdatedAt = DateTime.UtcNow;
-                    regisUser.CreatedBy = "System";
-                    regisUser.UpdatedBy = "System";
+                    AuditHelper.SetCreateAudit(regisUser, "System");
                     regisUser.isDeleted = false;
 
-                    await _userRepository.SaveChangesAsync(regisUser);
+                    await _userRepository.AddUserAsync(regisUser);
                 }
                 return regisUser.UserName;
             }
@@ -136,21 +134,21 @@ namespace TaskManagement.Business.Services
                 var user = await _userRepository.GetUserIdAsync(id);
 
                 var checkUserName = await _userRepository.GetUserAsync(request.UserName);
-                if (checkUserName != null)
+                if (checkUserName != null && checkUserName.UserId != id)
                 {
                     Console.WriteLine("Username already exists!");
                     return false;
                 }
 
                 var checkEmail = await _userRepository.GetMailAsync(request.Email);
-                if (checkEmail != null)
+                if (checkEmail != null && checkEmail.UserId != id)
                 {
                     Console.WriteLine("Email already exists!");
                     return false;
                 }
 
                 var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
-                if (checkPhone != null)
+                if (checkPhone != null && checkPhone.UserId != id)
                 {
                     Console.WriteLine(" Your phone arealdy exists!");
                     return false;
@@ -168,12 +166,9 @@ namespace TaskManagement.Business.Services
                     user.Address = request.Address ?? user.Address;
                     user.isDeleted = request.isDeleted ?? user.isDeleted;
                     user.Gende = request.Gende ?? user.Gende;
-                    user.CreatedAt = user.CreatedAt;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.CreatedBy = user.CreatedBy;
-                    user.UpdatedBy = request.UserName;
+                    AuditHelper.SetUpdateAudit(user, user.UserName);
 
-                    await _userRepository.UpdateUserAsync(id);
+                    await _userRepository.UpdateUserAsync(user);
                 }
                 else
                 {
@@ -211,10 +206,9 @@ namespace TaskManagement.Business.Services
                 if (user != null)
                 {
                     user.isDeleted = true;
-                    user.UpdatedAt = DateTime.UtcNow;
-                    user.CreatedBy = user.CreatedBy;
+                    AuditHelper.SetUpdateAudit(user, user.UserName);
 
-                    await _userRepository.UpdateUserAsync(userId);
+                    await _userRepository.UpdateUserAsync(user);
                 }
                 return true;
             }
