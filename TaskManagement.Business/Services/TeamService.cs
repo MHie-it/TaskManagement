@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Helpers;
 using TaskManagement.Business.Interfaces;
@@ -12,34 +13,39 @@ namespace TaskManagement.Business.Services
         private readonly ITeamRepository _teamRepository;
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<TeamService> _logger;
 
-        public TeamService(ITeamRepository teamRepository, IUserRepository userRepository, IMapper mapper)
+        public TeamService(ITeamRepository teamRepository, IUserRepository userRepository, IMapper mapper, ILogger<TeamService> logger)
         {
             _teamRepository = teamRepository;
             _userRepository = userRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
-        public async Task<bool> AddTeamAsync(TeamDto request)
+        public async Task<bool?> AddTeamAsync(TeamDto request)
         {
             try
             {
                 if (request == null || string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Description))
-                    return false;
-                var team = _mapper.Map<Team>(request);
-                if (team != null)
                 {
-                    AuditHelper.SetCreateAudit(team, "System");
-
-                    await _teamRepository.AddTeamAsync(team);
+                    _logger.LogWarning("Invalid team data provided.");
+                    throw new ArgumentNullException(nameof(request));
                 }
+
+                var team = _mapper.Map<Team>(request);
+
+                team.CreateAudit("System");
+                var addTeam = await _teamRepository.AddTeamAsync(team);
+                _logger.LogInformation("Team '{TeamName}' added successfully.", team.Name);
+
+                return addTeam;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return false;
+                _logger.LogError(ex, "Error occurred while adding team.");
+                throw;
             }
-            return false;
         }
 
         public async Task<List<TeamDto>> GetAllTeamsAsync()
@@ -47,7 +53,10 @@ namespace TaskManagement.Business.Services
             var listTeams = await _teamRepository.GetTeamsAsync();
             var data = _mapper.Map<List<TeamDto>>(listTeams);
             if (data != null && data.Any())
+            {
+                _logger.LogInformation("Retrieved {TeamCount} teams successfully.", data.Count);
                 return data;
+            }
             return data ?? new List<TeamDto>();
         }
 
@@ -65,7 +74,7 @@ namespace TaskManagement.Business.Services
 
                 if (teams == null)
                 {
-                    return null;
+                    throw new KeyNotFoundException("Team not found.");
                 }
                 var data = _mapper.Map<List<TeamDto>>(teams);
 
@@ -73,49 +82,48 @@ namespace TaskManagement.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                _logger.LogError(ex, "Error occurred while retrieving team by name.");
+                throw;
             }
         }
 
-        public async Task<bool?> AddMemberAsync(int UserId,AddUserToTeamDto request)
+        public async Task<bool?> AddMemberAsync(int UserId, AddUserToTeamDto request)
         {
             try
             {
                 var team = await _teamRepository.GetTeamByIdAsync(request.TeamId);
                 if (team == null)
                 {
-                    Console.WriteLine("Team not found !!");
-                    return false;
+                    _logger.LogWarning("Team not found.");
+                    throw new KeyNotFoundException("Team not found.");
                 }
 
                 var user = await _userRepository.GetUserByIdAsync(UserId);
                 if (user == null)
                 {
-                    Console.WriteLine("User not found !!");
-                    return false;
+                    _logger.LogWarning("User not found.");
+                    throw new KeyNotFoundException("User not found.");
                 }
 
                 var checkUserInTeam = await _teamRepository.GetMemberToTeamAsync(request.TeamId, UserId);
                 if (checkUserInTeam == true)
                 {
-                    Console.WriteLine("User is already a member of the team !!");
-                    return false;
+                    _logger.LogWarning("User is already a member of the team.");
+                    throw new InvalidOperationException("User is already a member of the team.");
                 }
 
-                if (user != null)
-                {
-                    user.TeamId = request.TeamId;
-                    AuditHelper.SetUpdateAudit(user, user.UserName);
-                    await _userRepository.UpdateUserAsync(user);
-                }
+                user.TeamId = request.TeamId;
+                AuditHelper.SetUpdateAudit(user, user.UserName);
+                var result = await _userRepository.UpdateUserAsync(user);
 
-                return true;
+                _logger.LogInformation("User '{UserName}' added to team '{TeamName}' successfully.", user.UserName, team.Name);
+                return result;
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return false;
+                _logger.LogError(ex, "Error occurred while adding member to team.");
+                throw;
             }
         }
     }
