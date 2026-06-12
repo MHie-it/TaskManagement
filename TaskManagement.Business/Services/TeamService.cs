@@ -27,9 +27,13 @@ namespace TaskManagement.Business.Services
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Description))
+                if (request == null)
                 {
-                    _logger.LogWarning("Invalid team data provided.");
+                    throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+                }
+
+                if (string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Description))
+                {
                     throw new ArgumentNullException(nameof(request));
                 }
 
@@ -51,6 +55,7 @@ namespace TaskManagement.Business.Services
         public async Task<List<TeamDto>> GetAllTeamsAsync()
         {
             var listTeams = await _teamRepository.GetTeamsAsync();
+
             var data = _mapper.Map<List<TeamDto>>(listTeams);
             if (data != null && data.Any())
             {
@@ -94,15 +99,13 @@ namespace TaskManagement.Business.Services
                 var team = await _teamRepository.GetTeamByIdAsync(request.TeamId);
                 if (team == null)
                 {
-                    _logger.LogWarning("Team not found.");
                     throw new KeyNotFoundException("Team not found.");
                 }
 
                 var user = await _userRepository.GetUserByIdAsync(UserId);
                 if (user == null)
                 {
-                    _logger.LogWarning("User not found.");
-                    throw new KeyNotFoundException("User not found.");
+                    throw new KeyNotFoundException($"User with ID {UserId} not found.");
                 }
 
                 var checkUserInTeam = await _teamRepository.GetMemberToTeamAsync(request.TeamId, UserId);

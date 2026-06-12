@@ -30,6 +30,7 @@ namespace TaskManagement.Business.Services
 
                 if (data != null && data.Any())
                 {
+                    _logger.LogInformation("Retrieved {Count} users for team ID {TeamId}.", data.Count, teamId);
                     return data;
                 }
 
@@ -51,6 +52,7 @@ namespace TaskManagement.Business.Services
 
                 if (data != null && data.Any())
                 {
+                    _logger.LogInformation("Retrieved {Count} users.", data.Count);
                     return data;
                 }
 
@@ -76,12 +78,17 @@ namespace TaskManagement.Business.Services
 
                 var data = _mapper.Map<UserDto>(user);
 
+                _logger.LogInformation("Retrieved user with ID {UserId}.", id);
                 return data;
 
             }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while retrieving user by ID.");
+                _logger.LogError(ex, "Error occurred while retrieving user by ID {UserId}.", id);
                 throw;
             }
         }
@@ -90,10 +97,14 @@ namespace TaskManagement.Business.Services
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.HashPass))
+                if (request == null)
                 {
-                    _logger.LogWarning("Invalid user data provided.");
-                    throw new ArgumentException("Invalid user data provided.");
+                    throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+                }
+
+                if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.HashPass))
+                {
+                    throw new ArgumentException("Information can not null or empty");
                 }
 
                 var checkUser = await _userRepository.GetUserAsync(request.UserName);
@@ -123,6 +134,7 @@ namespace TaskManagement.Business.Services
                     _logger.LogInformation("User {UserName} registered successfully.", regisUser.UserName);
                 }
                 return regisUser.UserName;
+
             }
             catch (Exception ex)
             {
@@ -136,6 +148,10 @@ namespace TaskManagement.Business.Services
             try
             {
                 var user = await _userRepository.GetUserIdAsync(id);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException("User not found.");
+                }
 
                 var checkUserName = await _userRepository.GetUserAsync(request.UserName);
                 if (checkUserName != null && checkUserName.UserId != id)
@@ -190,13 +206,13 @@ namespace TaskManagement.Business.Services
                 var user = await _userRepository.GetUserIdAsync(userId);
                 if (user == null)
                 {
-                    _logger.LogWarning("User with ID {UserId} not found for deletion.", userId);
                     throw new KeyNotFoundException("User not found.");
                 }
 
                 var checkTask = await _userRepository.CheckUnTaskFinishesAsync(userId);
                 if (checkTask == true)
                 {
+                    _logger.LogWarning("User with ID {UserId} has unfinished tasks and cannot be deleted.", userId);
                     throw new InvalidOperationException("Cannot delete user with unfinished tasks.");
                 }
 

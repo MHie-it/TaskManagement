@@ -26,22 +26,25 @@ namespace TaskManagement.Business.Services
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.Title)
+                if (request == null)
+                {
+                    throw new ArgumentNullException(nameof(request));
+                }
+
+                if (string.IsNullOrEmpty(request.Title)
                     || request.UserId <= 0
                     || string.IsNullOrEmpty(request.Status)
                     || request.StarTime == default
                     || request.FinishTime == default
                     || string.IsNullOrEmpty(request.Priority))
                 {
-                    _logger.LogWarning("Invalid task data provided.");
-                    throw new ArgumentException("Invalid task data.");
+                    throw new ArgumentException("Invalid Task can not be null or empty.");
                 }
 
                 var checkUser = await _userRepository.GetUserByIdAsync(request.UserId);
                 if (checkUser == null)
                 {
-                    _logger.LogWarning("User not found for task creation.");
-                    throw new KeyNotFoundException("User not found.");
+                    throw new KeyNotFoundException($"User with ID {request.UserId} not found.");
                 }
 
                 var taskEntity = _mapper.Map<DataAccess.Models.Task>(request);
@@ -51,6 +54,7 @@ namespace TaskManagement.Business.Services
                     await _taskRepository.AddTaskAsync(taskEntity);
                     _logger.LogInformation("Task created successfully with title: {Title}", taskEntity.Title);
                 }
+
                 return request.Title;
             }
             catch (Exception ex)
@@ -77,6 +81,7 @@ namespace TaskManagement.Business.Services
 
                 var data = _mapper.Map<List<ListTaskDto>>(listTasks);
                 _logger.LogInformation("Retrieved {Count} tasks.", data.Count);
+
                 return data ?? new List<ListTaskDto>();
             }
             catch (Exception ex)
@@ -99,8 +104,7 @@ namespace TaskManagement.Business.Services
                 var checkUser = await _userRepository.GetUserByIdAsync(request.UserId);
                 if (checkUser == null)
                 {
-                    _logger.LogWarning("User not found for task update.");
-                    throw new KeyNotFoundException("User not found.");
+                    throw new KeyNotFoundException($"User with ID {request.UserId} not found.");
                 }
 
                 task.Title = request.Title ?? task.Title;
@@ -112,8 +116,8 @@ namespace TaskManagement.Business.Services
                 task.Priority = request.Priority ?? task.Priority;
                 task.Status = request.Status ?? task.Status;
                 task.Note = request.Note ?? task.Note;
-
                 AuditHelper.SetUpdateAudit(task, "System");
+
                 var update = await _taskRepository.UpdateTaskAsync(task);
                 _logger.LogInformation("Task updated successfully with title: {Title}", task.Title);
 
