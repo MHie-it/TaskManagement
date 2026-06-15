@@ -4,17 +4,20 @@ using TaskManagement.Business.Interfaces;
 using TaskManagement.Business.Helpers;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace TaskManagement.Business.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<UserService> _logger;
         private readonly IMapper _mapper;
 
-        public UserService(IMapper mapper, IUserRepository userRepository)
+        public UserService(IMapper mapper, IUserRepository userRepository, ILogger<UserService> logger)
         {
             _mapper = mapper;
+            _logger = logger;
             _userRepository = userRepository;
         }
 
@@ -27,6 +30,7 @@ namespace TaskManagement.Business.Services
 
                 if (data != null && data.Any())
                 {
+                    _logger.LogInformation("Retrieved {Count} users for team ID {TeamId}.", data.Count, teamId);
                     return data;
                 }
 
@@ -34,8 +38,8 @@ namespace TaskManagement.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                _logger.LogError(ex, "Error occurred while retrieving users by team.");
+                throw;
             }
         }
 
@@ -48,6 +52,7 @@ namespace TaskManagement.Business.Services
 
                 if (data != null && data.Any())
                 {
+                    _logger.LogInformation("Retrieved {Count} users.", data.Count);
                     return data;
                 }
 
@@ -55,8 +60,8 @@ namespace TaskManagement.Business.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                _logger.LogError(ex, "Error occurred while retrieving all users.");
+                throw;
             }
         }
 
@@ -67,19 +72,24 @@ namespace TaskManagement.Business.Services
                 var user = await _userRepository.GetUserByIdAsync(id);
                 if (user == null)
                 {
-                    Console.WriteLine("User not found!!");
-                    return null;
+                    _logger.LogWarning("User with ID {UserId} not found.", id);
+                    throw new KeyNotFoundException("User not found.");
                 }
 
                 var data = _mapper.Map<UserDto>(user);
 
+                _logger.LogInformation("Retrieved user with ID {UserId}.", id);
                 return data;
 
             }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                _logger.LogError(ex, "Error occurred while retrieving user by ID {UserId}.", id);
+                throw;
             }
         }
 
@@ -87,24 +97,28 @@ namespace TaskManagement.Business.Services
         {
             try
             {
-                if (request == null || string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.HashPass))
+                if (request == null)
                 {
-                    Console.WriteLine("Invalid user data provided.");
-                    return null;
+                    throw new ArgumentNullException(nameof(request), "Request cannot be null.");
+                }
+
+                if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.FullName) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.HashPass))
+                {
+                    throw new ArgumentException("Information can not null or empty");
                 }
 
                 var checkUser = await _userRepository.GetUserAsync(request.UserName);
                 if (checkUser != null)
                 {
-                    Console.WriteLine("User already exists!");
-                    return null;
+                    _logger.LogWarning("Username {UserName} already exists.", request.UserName);
+                    throw new InvalidOperationException("Username already exists.");
                 }
 
                 var checkEmail = await _userRepository.GetMailAsync(request.Email);
                 if (checkEmail != null)
                 {
-                    Console.WriteLine("Email already exists!");
-                    return null;
+                    _logger.LogWarning("Email {Email} already exists.", request.Email);
+                    throw new InvalidOperationException("Email already exists.");
                 }
 
                 var defaultRole = 2;
@@ -117,13 +131,15 @@ namespace TaskManagement.Business.Services
                     regisUser.isDeleted = false;
 
                     await _userRepository.AddUserAsync(regisUser);
+                    _logger.LogInformation("User {UserName} registered successfully.", regisUser.UserName);
                 }
                 return regisUser.UserName;
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return null;
+                _logger.LogError(ex, "Error occurred while registering user.");
+                throw;
             }
         }
 
@@ -132,55 +148,53 @@ namespace TaskManagement.Business.Services
             try
             {
                 var user = await _userRepository.GetUserIdAsync(id);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException("User not found.");
+                }
 
                 var checkUserName = await _userRepository.GetUserAsync(request.UserName);
                 if (checkUserName != null && checkUserName.UserId != id)
                 {
-                    Console.WriteLine("Username already exists!");
-                    return false;
+                    _logger.LogWarning("Username {UserName} already exists.", request.UserName);
+                    throw new InvalidOperationException("Username already exists.");
                 }
 
                 var checkEmail = await _userRepository.GetMailAsync(request.Email);
                 if (checkEmail != null && checkEmail.UserId != id)
                 {
-                    Console.WriteLine("Email already exists!");
-                    return false;
+                    _logger.LogWarning("Email {Email} already exists.", request.Email);
+                    throw new InvalidOperationException("Email already exists.");
                 }
 
                 var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
                 if (checkPhone != null && checkPhone.UserId != id)
                 {
-                    Console.WriteLine(" Your phone arealdy exists!");
-                    return false;
+                    _logger.LogWarning("Phone {Phone} already exists.", request.Phone);
+                    throw new InvalidOperationException("Phone already exists.");
                 }
 
-                if (user != null)
-                {
-                    user.TeamId = request.TeamId ?? user.TeamId;
-                    user.UserName = request.UserName ?? user.UserName;
-                    user.HashPass = request.HashPass ?? user.HashPass;
-                    user.FullName = request.FullName ?? user.FullName;
-                    user.Email = request.Email ?? user.Email;
-                    user.Phone = request.Phone ?? user.Phone;
-                    user.Bod = request.Bod ?? user.Bod;
-                    user.Address = request.Address ?? user.Address;
-                    user.isDeleted = request.isDeleted ?? user.isDeleted;
-                    user.Gende = request.Gende ?? user.Gende;
-                    AuditHelper.SetUpdateAudit(user, user.UserName);
+                user.TeamId = request.TeamId ?? user.TeamId;
+                user.UserName = request.UserName ?? user.UserName;
+                user.HashPass = request.HashPass ?? user.HashPass;
+                user.FullName = request.FullName ?? user.FullName;
+                user.Email = request.Email ?? user.Email;
+                user.Phone = request.Phone ?? user.Phone;
+                user.Bod = request.Bod ?? user.Bod;
+                user.Address = request.Address ?? user.Address;
+                user.isDeleted = request.isDeleted ?? user.isDeleted;
+                user.Gende = request.Gende ?? user.Gende;
+                AuditHelper.SetUpdateAudit(user, user.UserName);
 
-                    await _userRepository.UpdateUserAsync(user);
-                }
-                else
-                {
-                    Console.WriteLine("User not found!!");
-                    return false;
-                }
-                return true;
+                var result = await _userRepository.UpdateUserAsync(user);
+                _logger.LogInformation("User with ID {UserId} updated successfully.", id);
+                return result;
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return false;
+                _logger.LogError(ex, "Error occurred while updating user with ID {UserId}.", id);
+                throw;
             }
         }
 
@@ -192,30 +206,29 @@ namespace TaskManagement.Business.Services
                 var user = await _userRepository.GetUserIdAsync(userId);
                 if (user == null)
                 {
-                    Console.WriteLine("User notfound");
-                    return false;
+                    throw new KeyNotFoundException("User not found.");
                 }
 
                 var checkTask = await _userRepository.CheckUnTaskFinishesAsync(userId);
                 if (checkTask == true)
                 {
-                    Console.WriteLine(" User has unfinished tasks");
-                    return false;
+                    _logger.LogWarning("User with ID {UserId} has unfinished tasks and cannot be deleted.", userId);
+                    throw new InvalidOperationException("Cannot delete user with unfinished tasks.");
                 }
 
-                if (user != null)
-                {
-                    user.isDeleted = true;
-                    AuditHelper.SetUpdateAudit(user, user.UserName);
+                user.isDeleted = true;
+                AuditHelper.SetUpdateAudit(user, user.UserName);
 
-                    await _userRepository.UpdateUserAsync(user);
-                }
-                return true;
+                var result = await _userRepository.UpdateUserAsync(user);
+                _logger.LogInformation("User with ID {UserId} marked as deleted successfully.", userId);
+
+                return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return false;
+                _logger.LogError(ex, "Error occurred while deleting user with ID {UserId}.", userId);
+                throw;
+
             }
         }
     }

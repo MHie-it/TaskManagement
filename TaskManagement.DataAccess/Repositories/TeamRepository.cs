@@ -6,7 +6,7 @@ namespace TaskManagement.DataAccess.Repositories
 {
     public interface ITeamRepository
     {
-        Task<Team?> AddTeamAsync(Team team);
+        Task<bool?> AddTeamAsync(Team team);
 
         Task<List<Team>> GetTeamsAsync();
 
@@ -26,11 +26,11 @@ namespace TaskManagement.DataAccess.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Team?> AddTeamAsync(Team team)
+        public async Task<bool?> AddTeamAsync(Team team)
         {
             await _dbContext.AddAsync<Team>(team);
-            await _dbContext.SaveChangesAsync();
-            return team;
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
 
         public async Task<List<Team>> GetTeamsAsync()
@@ -48,7 +48,8 @@ namespace TaskManagement.DataAccess.Repositories
             return await _dbContext.Teams.AsNoTracking().FirstOrDefaultAsync(t => t.TeamId == id);
         }
 
-        public async Task<bool> GetMemberToTeamAsync(int teamId, int userId) {
+        public async Task<bool> GetMemberToTeamAsync(int teamId, int userId)
+        {
             return await _dbContext.Teams.AsNoTracking().AnyAsync(t => t.TeamId == teamId && t.Users.Any(u => u.UserId == userId));
         }
     }

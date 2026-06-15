@@ -8,7 +8,7 @@ namespace TaskManagement.Business.Interfaces
 
         public Task<List<TeamDto>> GetTeamByNameAsync(string name);
 
-        public Task<bool> AddTeamAsync(TeamDto request);
+        public Task<bool?> AddTeamAsync(TeamDto request);
 
         public Task<bool?> AddMemberAsync(int UserId, AddUserToTeamDto request);
     }
