@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using TaskManagement.Business.Dtos;
-using TaskManagement.Business.Helpers;
 using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
@@ -116,7 +115,8 @@ namespace TaskManagement.Business.Services
                 }
 
                 user.TeamId = request.TeamId;
-                AuditHelper.SetUpdateAudit(user, user.UserName);
+                user.UpdateAudit(user.UserName);
+                
                 var result = await _userRepository.UpdateUserAsync(user);
 
                 _logger.LogInformation("User '{UserName}' added to team '{TeamName}' successfully.", user.UserName, team.Name);

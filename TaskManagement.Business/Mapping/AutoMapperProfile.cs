@@ -20,6 +20,7 @@ namespace TaskManagement.Business.Mapping
 
             CreateMap<TaskDto, Task>(); 
             CreateMap<Task, TaskDto>();
+            CreateMap<Task, ListTaskDto>();
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
-using TaskManagement.Business.Helpers;
 using TaskManagement.DataAccess.Models;
 using TaskManagement.DataAccess.Repositories;
 using Microsoft.Extensions.Logging;
@@ -127,7 +126,7 @@ namespace TaskManagement.Business.Services
                 if (regisUser != null)
                 {
                     regisUser.RoleId = defaultRole;
-                    AuditHelper.SetCreateAudit(regisUser, "System");
+                    regisUser.CreateAudit("System");
                     regisUser.isDeleted = false;
 
                     await _userRepository.AddUserAsync(regisUser);
@@ -184,7 +183,7 @@ namespace TaskManagement.Business.Services
                 user.Address = request.Address ?? user.Address;
                 user.isDeleted = request.isDeleted ?? user.isDeleted;
                 user.Gende = request.Gende ?? user.Gende;
-                AuditHelper.SetUpdateAudit(user, user.UserName);
+                user.UpdateAudit(user.UserName);
 
                 var result = await _userRepository.UpdateUserAsync(user);
                 _logger.LogInformation("User with ID {UserId} updated successfully.", id);
@@ -217,7 +216,7 @@ namespace TaskManagement.Business.Services
                 }
 
                 user.isDeleted = true;
-                AuditHelper.SetUpdateAudit(user, user.UserName);
+                user.UpdateAudit(user.UserName);
 
                 var result = await _userRepository.UpdateUserAsync(user);
                 _logger.LogInformation("User with ID {UserId} marked as deleted successfully.", userId);
