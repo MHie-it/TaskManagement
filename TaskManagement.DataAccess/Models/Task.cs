@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TaskManagement.DataAccess.Models
 {
-    public partial class Task
+    public partial class Task : Audit
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -31,14 +26,6 @@ namespace TaskManagement.DataAccess.Models
         public string? Priority { get; set; }
 
         public string? Status { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime UpdatedAt { get; set; }
-
-        public string CreatedBy { get; set; }
-
-        public string UpdatedBy { get; set; }
 
         public User? User { get; set; }
     }

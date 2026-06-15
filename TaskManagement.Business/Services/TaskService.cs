@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using TaskManagement.Business.Dtos;
-using TaskManagement.Business.Helpers;
 using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.Repositories;
 
@@ -50,7 +49,7 @@ namespace TaskManagement.Business.Services
                 var taskEntity = _mapper.Map<DataAccess.Models.Task>(request);
                 if (taskEntity != null)
                 {
-                    AuditHelper.SetCreateAudit(taskEntity, checkUser.FullName);
+                    taskEntity.CreateAudit("System");
                     await _taskRepository.AddTaskAsync(taskEntity);
                     _logger.LogInformation("Task created successfully with title: {Title}", taskEntity.Title);
                 }
@@ -116,7 +115,7 @@ namespace TaskManagement.Business.Services
                 task.Priority = request.Priority ?? task.Priority;
                 task.Status = request.Status ?? task.Status;
                 task.Note = request.Note ?? task.Note;
-                AuditHelper.SetUpdateAudit(task, "System");
+                task.UpdateAudit("System");
 
                 var update = await _taskRepository.UpdateTaskAsync(task);
                 _logger.LogInformation("Task updated successfully with title: {Title}", task.Title);
