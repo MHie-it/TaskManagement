@@ -5,3 +5,10 @@ export const StatusConfig = {
   'In Progress': { variant: 'secondary', icon: Clock, color: 'text-blue-600' },
   Done: { variant: 'default', icon: CheckCircle2, color: 'text-green-600' },
 }
+
+export const Status = [
+    "Todo",
+    "In Progress",
+    "Done"
+];
+

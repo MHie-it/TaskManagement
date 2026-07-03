@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import HomePage from './pages/HomePage.jsx'
+import TaskPage from './pages/TaskPage.jsx'
 
 
 function App() {
@@ -7,7 +8,8 @@ function App() {
 
   return (
     <>
-      <HomePage/>
+      {/* <HomePage/> */}
+      <TaskPage/>
     </>
   )
 }

@@ -3,3 +3,9 @@ export const PriorityConfig = {
     Medium: 'secondary',
     Low: 'outline',
 }
+
+export const Priority = [
+    "High",
+    "Medium",
+    "Low"
+];
