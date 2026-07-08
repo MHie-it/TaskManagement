@@ -2,15 +2,15 @@ import { Calendar, Flag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/components/lib/utils'
-import { glassCard } from '@/components/lib/style'    
+import { glassCard } from '@/components/lib/style'
 import { StatusConfig } from '@/constracts/StatusConfig.jsx'
 import { PriorityConfig } from '@/constracts/PriorityConfig.jsx'
 
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task, onClick }) => {
     const status = StatusConfig[task.status] ?? StatusConfig.Todo
     const StatusIcon = status.icon
     return (
-        <Card className={cn(glassCard, 'ring-0 transition hover:shadow-xl')}>
+        <Card className={cn(glassCard, 'ring-0 transition hover:shadow-xl')} onClick={onClick}>
             <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{task.title}</CardTitle>

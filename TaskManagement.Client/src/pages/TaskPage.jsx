@@ -11,6 +11,7 @@ import { useState } from 'react'
 const TaskPage = () => {
   const [filter, setFilter] = useState('All')
   const [open, setOpen] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null)
 
   const filteredTasks =
     filter === 'All'
@@ -45,11 +46,17 @@ const TaskPage = () => {
           </Button>
         </section>
 
-        <AddTaskDialog open={open} onOpenChange={setOpen} />
+        <AddTaskDialog open={open} onOpenChange={setOpen} task={selectedTask} />
 
         <StatSection stats={stats} />
 
-        <TaskBoard tasks={filteredTasks} filter={filter} />
+        <TaskBoard
+          tasks={filteredTasks}
+          filter={filter}
+          onUpdate={(tasks) => {
+            setSelectedTask(tasks)
+            setOpen(true)
+          }} />
       </main>
     </Background>
   )
