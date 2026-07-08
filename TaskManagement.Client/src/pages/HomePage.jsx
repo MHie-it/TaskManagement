@@ -6,11 +6,11 @@ import Background from '@/components/layout/Background.jsx'
 import { Button } from '@/components/ui/button'
 import TaskFilterBar from '@/components/home/TaskFilterBar.jsx'
 import TaskGrid from '@/components/home/TaskGrid.jsx'
-import AddTaskDialog from '@/components/task/AddTaskDialog'
 import StatsInfor from '@/components/home/StatsInfor.jsx'
 import TeamGrid from '@/components/team/TeamGrid.jsx'
 import { MOCK_TEAMS, MOCK_USERS, buildTeamsWithMembers } from '@/data/mockTeams'
 import { MOCK_TASKS } from '@/data/mockTasks'
+import AddUserDialog from '@/components/user/AddUserDialog'
 
 const HomePage = () => {
   const [filter, setFilter] = useState('All')
@@ -54,11 +54,11 @@ const HomePage = () => {
           </div>
           <Button className="gap-2 shrink-0" onClick={() => setOpen(true)}>
             <Plus className="size-4" />
-            New Task
+            New User
           </Button>
         </section>
 
-        <AddTaskDialog open={open} onOpenChange={setOpen} />
+        <AddUserDialog open={open} onOpenChange={setOpen} />
 
         <StatsInfor statsInfor={statsInfor} />
 
