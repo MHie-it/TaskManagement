@@ -1,9 +1,8 @@
 import StatSection from '@/components/home/StatSection'
-import TaskFilterBar from '@/components/home/TaskFilterBar'
-import TaskGrid from '@/components/home/TaskGrid'
 import Background from '@/components/layout/Background'
 import Header from '@/components/layout/Header'
 import AddTaskDialog from '@/components/task/AddTaskDialog'
+import TaskBoard from '@/components/task/TaskBoard'
 import { Button } from '@/components/ui/button'
 import { MOCK_TASKS } from '@/data/mockTasks'
 import { Plus } from 'lucide-react'
@@ -50,10 +49,7 @@ const TaskPage = () => {
 
         <StatSection stats={stats} />
 
-        <section className="space-y-4 pb-4">
-          <TaskFilterBar filter={filter} onChange={setFilter} />
-          <TaskGrid tasks={filteredTasks} filter={filter} />
-        </section>
+        <TaskBoard tasks={filteredTasks} filter={filter} />
       </main>
     </Background>
   )
