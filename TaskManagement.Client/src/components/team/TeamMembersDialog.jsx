@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/components/lib/utils'
 import { glassCard } from '@/components/lib/style'
-import { Mail, Pencil, Users } from 'lucide-react'
+import { Mail, Pencil, Plus, PlusCircle, Users } from 'lucide-react'
 
 function getInitials(name) {
   return name
@@ -20,7 +20,7 @@ function getInitials(name) {
     .toUpperCase()
 }
 
-const TeamMembersDialog = ({ open, onOpenChange, team, members, onEdit }) => {
+const TeamMembersDialog = ({ open, onOpenChange, team, members, onEdit, onAddMember }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -67,6 +67,15 @@ const TeamMembersDialog = ({ open, onOpenChange, team, members, onEdit }) => {
             <div className={cn(glassCard, 'py-8 text-center text-sm text-muted-foreground ring-0')}>
               No members in this team yet.
             </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-4">
+          {onAddMember && (
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={onAddMember}>
+              <PlusCircle size="3.5" />
+              Add Member
+            </Button>
           )}
         </div>
       </DialogContent>

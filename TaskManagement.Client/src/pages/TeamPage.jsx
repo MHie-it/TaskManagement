@@ -16,18 +16,21 @@ import {
   buildTeamsWithMembers,
   getUsersByTeamId,
 } from '@/data/mockTeams'
+import AddTeamMemberDialog from '@/components/team/AddTeamMemberDialog'
 
 const TeamPage = () => {
   const [addOpen, setAddOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [membersOpen, setMembersOpen] = useState(false)
+  const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [teams, setTeams] = useState(MOCK_TEAMS)
+  const [users, setUsers] = useState(MOCK_USERS)
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [editingTeam, setEditingTeam] = useState(null)
 
-  const teamsWithMembers = buildTeamsWithMembers(teams, MOCK_USERS)
-  const stats = buildTeamStats(teams, MOCK_USERS)
+  const teamsWithMembers = buildTeamsWithMembers(teams, users)
+  const stats = buildTeamStats(teams, users)
 
   const filteredTeams = teamsWithMembers.filter((team) =>
     team.name.toLowerCase().includes(search.toLowerCase())
@@ -36,7 +39,7 @@ const TeamPage = () => {
   const syncSelectedTeam = (updatedTeams) => {
     if (!selectedTeam) return null
 
-    const freshTeam = buildTeamsWithMembers(updatedTeams, MOCK_USERS).find(
+    const freshTeam = buildTeamsWithMembers(updatedTeams, users).find(
       (team) => team.teamId === selectedTeam.teamId
     )
 
@@ -45,6 +48,21 @@ const TeamPage = () => {
     }
 
     return freshTeam
+  }
+
+  const handleOpenAddTeamMember = () => {
+    setAddMemberOpen(true)
+  }
+
+  const handleAddMember = ({ userId, teamId }) => {
+    if (!userId || !teamId) return
+
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.UserId === userId ? { ...user, TeamId: teamId } : user
+      )
+    )
+    setAddMemberOpen(false)
   }
 
   const handleAddTeam = (newTeam) => {
@@ -91,7 +109,7 @@ const TeamPage = () => {
   }
 
   const selectedMembers = selectedTeam
-    ? getUsersByTeamId(MOCK_USERS, selectedTeam.teamId)
+    ? getUsersByTeamId(users, selectedTeam.teamId)
     : []
 
   return (
@@ -134,6 +152,15 @@ const TeamPage = () => {
           team={selectedTeam}
           members={selectedMembers}
           onEdit={handleEditFromMembers}
+          onAddMember={handleOpenAddTeamMember}
+        />
+
+        <AddTeamMemberDialog
+          open={addMemberOpen}
+          onOpenChange={setAddMemberOpen}
+          team={selectedTeam}
+          users={users}
+          onSubmit={handleAddMember}
         />
 
         <TeamStatSection stats={stats} />
