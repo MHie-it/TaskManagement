@@ -4,13 +4,12 @@ import { Link } from 'react-router'
 import Header from '@/components/layout/Header.jsx'
 import Background from '@/components/layout/Background.jsx'
 import { Button } from '@/components/ui/button'
-import TaskFilterBar from '@/components/home/TaskFilterBar.jsx'
-import TaskGrid from '@/components/home/TaskGrid.jsx'
 import StatsInfor from '@/components/home/StatsInfor.jsx'
 import TeamGrid from '@/components/team/TeamGrid.jsx'
 import { MOCK_TEAMS, MOCK_USERS, buildTeamsWithMembers } from '@/data/mockTeams'
 import { MOCK_TASKS } from '@/data/mockTasks'
 import AddUserDialog from '@/components/user/AddUserDialog'
+import TaskBoard from '@/components/task/TaskBoard'
 
 const HomePage = () => {
   const [filter, setFilter] = useState('All')
@@ -80,10 +79,8 @@ const HomePage = () => {
           <TeamGrid teams={teamsWithMembers} />
         </section>
 
-        <section className="space-y-4 pb-4">
-          <TaskFilterBar filter={filter} onChange={setFilter} />
-          <TaskGrid tasks={filteredTasks} filter={filter} />
-        </section>
+        <TaskBoard tasks={filteredTasks} filter={filter} />
+
       </main>
     </Background>
   )

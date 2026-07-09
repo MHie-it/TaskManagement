@@ -1,9 +1,8 @@
 import StatSection from '@/components/home/StatSection'
-import TaskFilterBar from '@/components/home/TaskFilterBar'
-import TaskGrid from '@/components/home/TaskGrid'
 import Background from '@/components/layout/Background'
 import Header from '@/components/layout/Header'
 import AddTaskDialog from '@/components/task/AddTaskDialog'
+import TaskBoard from '@/components/task/TaskBoard'
 import { Button } from '@/components/ui/button'
 import { MOCK_TASKS } from '@/data/mockTasks'
 import { Plus } from 'lucide-react'
@@ -12,6 +11,7 @@ import { useState } from 'react'
 const TaskPage = () => {
   const [filter, setFilter] = useState('All')
   const [open, setOpen] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null)
 
   const filteredTasks =
     filter === 'All'
@@ -46,14 +46,17 @@ const TaskPage = () => {
           </Button>
         </section>
 
-        <AddTaskDialog open={open} onOpenChange={setOpen} />
+        <AddTaskDialog open={open} onOpenChange={setOpen} task={selectedTask} />
 
         <StatSection stats={stats} />
 
-        <section className="space-y-4 pb-4">
-          <TaskFilterBar filter={filter} onChange={setFilter} />
-          <TaskGrid tasks={filteredTasks} filter={filter} />
-        </section>
+        <TaskBoard
+          tasks={filteredTasks}
+          filter={filter}
+          onUpdate={(tasks) => {
+            setSelectedTask(tasks)
+            setOpen(true)
+          }} />
       </main>
     </Background>
   )

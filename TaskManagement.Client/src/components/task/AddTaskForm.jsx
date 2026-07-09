@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,7 +28,7 @@ const MOCK_USERS = [
   },
 ];
 
-const AddTaskForm = ({ onOpenChange }) => {
+const AddTaskForm = ({ task, onOpenChange }) => {
   const [formData, setFormData] = useState({
     userId: "",
     title: "",
@@ -39,6 +39,32 @@ const AddTaskForm = ({ onOpenChange }) => {
     priority: "",
     status: "",
   });
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        userId: task.userId,
+        title: task.title,
+        description: task.description,
+        starTime: task.starTime,
+        dueDate: task.dueDate,
+        note: task.note,
+        priority: task.priority,
+        status: task.status,
+      });
+    } else {
+      setFormData({
+        userId: "",
+        title: "",
+        description: "",
+        starTime: "",
+        dueDate: "",
+        note: "",
+        priority: "",
+        status: "",
+      });
+    }
+  }, [task]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -203,7 +229,7 @@ const AddTaskForm = ({ onOpenChange }) => {
         </Button>
 
         <Button onClick={handleSubmit}>
-          Create Task
+          {task ? "Update Task" : "Create Task"}
         </Button>
       </div>
 

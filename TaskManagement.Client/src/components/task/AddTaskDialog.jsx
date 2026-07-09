@@ -6,14 +6,14 @@ import {
 } from "@/components/ui/dialog";
 import AddTaskForm from "@/components/task/AddTaskForm.jsx";
 
-const AddTaskDialog = ({ open, onOpenChange }) => {
+const AddTaskDialog = ({ open, onOpenChange, task }) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} >
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>{task ? "Update Task" : "Add New Task"}</DialogTitle>
         </DialogHeader>
-        <AddTaskForm onOpenChange={onOpenChange} />
+        <AddTaskForm task={task} onOpenChange={onOpenChange} />
       </DialogContent>
     </Dialog>
   );

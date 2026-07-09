@@ -1,1 +1,1 @@
-export const Filter = ['All', 'Todo', 'In Progress', 'Done']
+export const Filter = ['Todo', 'In Progress', 'In Review', 'Done']
