@@ -26,7 +26,19 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowDev", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowDev");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
