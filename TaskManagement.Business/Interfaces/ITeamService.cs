@@ -1,4 +1,5 @@
 ﻿using TaskManagement.Business.Dtos;
+using TaskManagement.DataAccess.Models;
 
 namespace TaskManagement.Business.Interfaces
 {
@@ -11,5 +12,7 @@ namespace TaskManagement.Business.Interfaces
         public Task<bool?> AddTeamAsync(TeamDto request);
 
         public Task<bool?> AddMemberAsync(int UserId, AddUserToTeamDto request);
+
+        public Task<bool?> UpdateTeamAsync(int TeamId, TeamDto request);
     }
 }
