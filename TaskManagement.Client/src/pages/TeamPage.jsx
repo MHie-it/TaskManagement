@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import Background from '@/components/layout/Background'
 import Header from '@/components/layout/Header'
@@ -17,6 +17,7 @@ import {
   getUsersByTeamId,
 } from '@/data/mockTeams'
 import AddTeamMemberDialog from '@/components/team/AddTeamMemberDialog'
+import { TeamService } from '@/services/TeamService'
 
 const TeamPage = () => {
   const [addOpen, setAddOpen] = useState(false)
@@ -24,17 +25,16 @@ const TeamPage = () => {
   const [membersOpen, setMembersOpen] = useState(false)
   const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [teams, setTeams] = useState(MOCK_TEAMS)
+  const [teams, setTeams] = useState([])
   const [users, setUsers] = useState(MOCK_USERS)
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [editingTeam, setEditingTeam] = useState(null)
+  const teamsWithMembers = teams
 
-  const teamsWithMembers = buildTeamsWithMembers(teams, users)
-  const stats = buildTeamStats(teams, users)
-
-  const filteredTeams = teamsWithMembers.filter((team) =>
-    team.name.toLowerCase().includes(search.toLowerCase())
-  )
+  const stats = {
+    totalTeams: teams.length,
+    totalMembers: users.length,
+  }
 
   const syncSelectedTeam = (updatedTeams) => {
     if (!selectedTeam) return null
@@ -65,32 +65,6 @@ const TeamPage = () => {
     setAddMemberOpen(false)
   }
 
-  const handleAddTeam = (newTeam) => {
-    setTeams((prev) => [
-      ...prev,
-      {
-        TeamId: Math.max(...prev.map((team) => team.TeamId), 0) + 1,
-        Name: newTeam.Name,
-        Description: newTeam.Description,
-      },
-    ])
-  }
-
-  const handleUpdateTeam = (updatedTeam) => {
-    if (!editingTeam) return
-
-    setTeams((prev) => {
-      const nextTeams = prev.map((team) =>
-        team.TeamId === editingTeam.teamId
-          ? { ...team, Name: updatedTeam.Name, Description: updatedTeam.Description }
-          : team
-      )
-
-      syncSelectedTeam(nextTeams)
-      return nextTeams
-    })
-  }
-
   const handleTeamClick = (team) => {
     setSelectedTeam(team)
     setMembersOpen(true)
@@ -111,6 +85,56 @@ const TeamPage = () => {
   const selectedMembers = selectedTeam
     ? getUsersByTeamId(users, selectedTeam.teamId)
     : []
+
+  ///---------------------
+
+  useEffect(() => { fetchTeams(); }, []);
+
+  const fetchTeams = async () => {
+    const data = await TeamService.getAllTeam();
+    setTeams(data);
+  }
+
+  const handleSearch = async (value) => {
+    setSearch(value);
+    if (value.trim() === "") {
+      fetchTeams();
+      return;
+    }
+
+    const result = await TeamService.getTeamByName(value);
+    setTeams(result);
+  }
+
+  const handleAddTeam = async (newTeam) => {
+    try {
+      await TeamService.addTeam(newTeam);
+      fetchTeams();
+      setAddOpen(false);
+    }
+    catch (err) {
+      console.log(err);
+    }
+
+  }
+
+  const handleUpdateTeam = async (updatedTeam) => {
+    if (!editingTeam) return;
+
+    try {
+      await TeamService.updateTeam(
+        editingTeam.teamId,
+        updatedTeam
+      );
+
+      await fetchTeams();
+      setEditOpen(false);
+      setEditingTeam(null);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Background>
@@ -166,9 +190,9 @@ const TeamPage = () => {
         <TeamStatSection stats={stats} />
 
         <section className="space-y-4">
-          <TeamSearchBar value={search} onChange={setSearch} />
+          <TeamSearchBar value={search} onChange={handleSearch} />
           <TeamGrid
-            teams={filteredTeams}
+            teams={teams}
             onTeamClick={handleTeamClick}
             onEditTeam={handleEditTeam}
             emptyMessage={

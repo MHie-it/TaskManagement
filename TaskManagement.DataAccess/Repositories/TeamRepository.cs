@@ -15,6 +15,8 @@ namespace TaskManagement.DataAccess.Repositories
         Task<Team?> GetTeamByIdAsync(int id);
 
         Task<bool> GetMemberToTeamAsync(int teamId, int userId);
+
+        Task<bool> UpdateTeamAsync(Team team);
     }
 
     public class TeamRepository : ITeamRepository
@@ -51,6 +53,13 @@ namespace TaskManagement.DataAccess.Repositories
         public async Task<bool> GetMemberToTeamAsync(int teamId, int userId)
         {
             return await _dbContext.Teams.AsNoTracking().AnyAsync(t => t.TeamId == teamId && t.Users.Any(u => u.UserId == userId));
+        }
+
+        public async Task<bool> UpdateTeamAsync(Team team)
+        {
+            _dbContext.Teams.Update(team);
+            var result = await _dbContext.SaveChangesAsync();
+            return result > 0;
         }
     }
 }

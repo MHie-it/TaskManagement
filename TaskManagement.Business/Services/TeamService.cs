@@ -91,6 +91,28 @@ namespace TaskManagement.Business.Services
             }
         }
 
+        public async Task<bool?> UpdateTeamAsync(int TeamId, TeamDto request)
+        {
+            try
+            {
+                var team = await _teamRepository.GetTeamByIdAsync(TeamId);
+
+                team.Name = request.Name ?? team.Name;
+                team.Description = request.Description ?? team.Description;
+                team.UpdateAudit("System");
+
+                var update = await _teamRepository.UpdateTeamAsync(team);
+                _logger.LogInformation("Update success : {Name}", team.Name);
+
+                return update;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while update team.");
+                throw;
+            }
+        }
+
         public async Task<bool?> AddMemberAsync(int UserId, AddUserToTeamDto request)
         {
             try
@@ -116,7 +138,7 @@ namespace TaskManagement.Business.Services
 
                 user.TeamId = request.TeamId;
                 user.UpdateAudit(user.UserName);
-                
+
                 var result = await _userRepository.UpdateUserAsync(user);
 
                 _logger.LogInformation("User '{UserName}' added to team '{TeamName}' successfully.", user.UserName, team.Name);
