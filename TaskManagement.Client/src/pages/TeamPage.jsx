@@ -10,9 +10,7 @@ import AddTeamDialog from '@/components/team/AddTeamDialog'
 import EditTeamDialog from '@/components/team/EditTeamDialog'
 import TeamMembersDialog from '@/components/team/TeamMembersDialog'
 import {
-  MOCK_TEAMS,
   MOCK_USERS,
-  buildTeamStats,
   buildTeamsWithMembers,
   getUsersByTeamId,
 } from '@/data/mockTeams'
