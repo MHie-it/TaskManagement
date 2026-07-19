@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { Link } from 'react-router'
 import Header from '@/components/layout/Header.jsx'
@@ -6,34 +6,85 @@ import Background from '@/components/layout/Background.jsx'
 import { Button } from '@/components/ui/button'
 import StatsInfor from '@/components/home/StatsInfor.jsx'
 import TeamGrid from '@/components/team/TeamGrid.jsx'
-import { MOCK_TEAMS, MOCK_USERS, buildTeamsWithMembers } from '@/data/mockTeams'
-import { MOCK_TASKS } from '@/data/mockTasks'
 import AddUserDialog from '@/components/user/AddUserDialog'
 import TaskBoard from '@/components/task/TaskBoard'
+import { TeamService } from '@/services/TeamService'
+import { UserService } from '@/services/UserService'
+import { TaskService } from '@/services/TaskService'
+
+const normalizeTeams = (data = []) =>
+  data.map((team) => ({
+    teamId: team.teamId ?? team.TeamId,
+    name: team.name ?? team.Name,
+    description: team.description ?? team.Description,
+  }))
+
+const normalizeUsers = (data = []) =>
+  data.map((user) => ({
+    UserId: user.UserId ?? user.userId,
+    TeamId: user.TeamId ?? user.teamId,
+    FullName: user.FullName ?? user.fullName,
+    Email: user.Email ?? user.email,
+  }))
 
 const HomePage = () => {
   const [filter, setFilter] = useState('All')
   const [open, setOpen] = useState(false)
+  const [teams, setTeams] = useState([])
+  const [users, setUsers] = useState([])
+  const [tasks, setTasks] = useState([])
+
+  const loadData = async () => {
+    try {
+      const [teamsData, usersData, tasksData] = await Promise.all([
+        TeamService.getAllTeam(),
+        UserService.getAllUser(),
+        TaskService.getAllTask(),
+      ])
+      setTeams(normalizeTeams(teamsData))
+      setUsers(normalizeUsers(usersData))
+      setTasks(tasksData)
+    } catch (err) {
+      console.error('Error loading home data:', err)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const handleAddUser = async (userPayload) => {
+    try {
+      await UserService.addUser(userPayload)
+      await loadData()
+      setOpen(false)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const filteredTasks =
     filter === 'All'
-      ? MOCK_TASKS
-      : MOCK_TASKS.filter((t) => t.status === filter)
+      ? tasks
+      : tasks.filter((t) => t.status === filter)
 
   const statsInfor = {
-    totalTeam: MOCK_TEAMS.length,
-    totalMembers: MOCK_USERS.length,
-    totalTask: MOCK_TASKS.length,
-    taskCompleted: MOCK_TASKS.filter((t) => t.status === 'Done').length,
+    totalTeam: teams.length,
+    totalMembers: users.length,
+    totalTask: tasks.length,
+    taskCompleted: tasks.filter((t) => t.status === 'Done').length,
   }
 
-  const teamsWithMembers = buildTeamsWithMembers(MOCK_TEAMS, MOCK_USERS)
+  const teamsWithMembers = teams.map((team) => ({
+    ...team,
+    memberCount: users.filter((user) => user.TeamId === team.teamId).length,
+  }))
 
   const stats = {
-    total: MOCK_TASKS.length,
-    inProgress: MOCK_TASKS.filter((t) => t.status === 'In Progress').length,
-    done: MOCK_TASKS.filter((t) => t.status === 'Done').length,
-    overdue: MOCK_TASKS.filter(
+    total: tasks.length,
+    inProgress: tasks.filter((t) => t.status === 'In Progress').length,
+    done: tasks.filter((t) => t.status === 'Done').length,
+    overdue: tasks.filter(
       (t) => t.status !== 'Done' && new Date(t.dueDate) < new Date()
     ).length,
   }
@@ -57,7 +108,7 @@ const HomePage = () => {
           </Button>
         </section>
 
-        <AddUserDialog open={open} onOpenChange={setOpen} />
+        <AddUserDialog open={open} onOpenChange={setOpen} onSubmit={handleAddUser} />
 
         <StatsInfor statsInfor={statsInfor} />
 

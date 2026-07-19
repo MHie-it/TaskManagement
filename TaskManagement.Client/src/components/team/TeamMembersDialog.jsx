@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/components/lib/utils'
 import { glassCard } from '@/components/lib/style'
-import { Mail, Pencil, Plus, PlusCircle, Users } from 'lucide-react'
+import { Mail, Pencil, PlusCircle, Users } from 'lucide-react'
 
 function getInitials(name) {
   return name
