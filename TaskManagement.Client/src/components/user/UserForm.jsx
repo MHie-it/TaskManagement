@@ -27,7 +27,13 @@ const UserForm = ({
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        onSubmit(formData);
+        onSubmit?.({
+            UserName: formData.userName,
+            HashPass: formData.password,
+            FullName: formData.fullName,
+            Email: formData.email,
+            Gender: formData.gender,
+        });
 
         onOpenChange(false);
 
@@ -45,27 +51,52 @@ const UserForm = ({
 
             <div className="space-y-2">
                 <Label>User Name *</Label>
-                <Input className="h-11" />
+                <Input
+                    className="h-11"
+                    value={formData.userName}
+                    onChange={(e) => handleChange("userName", e.target.value)}
+                    required
+                />
             </div>
 
             <div className="space-y-2">
                 <Label>Password *</Label>
-                <Input type="password" className="h-11" />
+                <Input
+                    type="password"
+                    className="h-11"
+                    value={formData.password}
+                    onChange={(e) => handleChange("password", e.target.value)}
+                    required
+                />
             </div>
 
             <div className="space-y-2">
                 <Label>Full Name *</Label>
-                <Input className="h-11" />
+                <Input
+                    className="h-11"
+                    value={formData.fullName}
+                    onChange={(e) => handleChange("fullName", e.target.value)}
+                    required
+                />
             </div>
 
             <div className="space-y-2">
                 <Label>Email *</Label>
-                <Input type="email" className="h-11" />
+                <Input
+                    type="email"
+                    className="h-11"
+                    value={formData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
+                    required
+                />
             </div>
 
             <div className="space-y-2">
                 <Label>Gender</Label>
-                <Select>
+                <Select
+                    value={formData.gender}
+                    onValueChange={(value) => handleChange("gender", value)}
+                >
                     <SelectTrigger className="h-11">
                         <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
@@ -78,8 +109,10 @@ const UserForm = ({
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline">Cancel</Button>
-                <Button>Add User</Button>
+                <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
+                    Cancel
+                </Button>
+                <Button type="submit">Add User</Button>
             </div>
 
         </form>

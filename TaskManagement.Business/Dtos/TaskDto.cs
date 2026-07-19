@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +30,7 @@ namespace TaskManagement.Business.Dtos
 
     public class ListTaskDto
     {
+        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateOnly StarTime { get; set; }

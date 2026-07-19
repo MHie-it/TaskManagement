@@ -12,6 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Status } from "@/constracts/StatusConfig";
 import { Priority } from "@/constracts/PriorityConfig";
+import { TaskService } from "@/services/TaskService";
 
 const MOCK_USERS = [
   {
@@ -28,7 +29,7 @@ const MOCK_USERS = [
   },
 ];
 
-const AddTaskForm = ({ task, onOpenChange }) => {
+const AddTaskForm = ({ task, onOpenChange, onSuccess }) => {
   const [formData, setFormData] = useState({
     userId: "",
     title: "",
@@ -73,9 +74,18 @@ const AddTaskForm = ({ task, onOpenChange }) => {
     }));
   };
 
-  const handleSubmit = () => {
-    console.log(formData);
-    onOpenChange(false);
+  const handleSubmit = async() => {
+    try{
+      if(task){
+        await TaskService.updateTask(task.id,formData)
+      }else{
+        await TaskService.addTask(formData)
+      }
+      onSuccess();
+      onOpenChange(false);
+    }catch(error){
+      console.error(error);
+    }
   };
 
   return (
@@ -98,6 +108,7 @@ const AddTaskForm = ({ task, onOpenChange }) => {
         <Label className="font-medium">Assign To *</Label>
 
         <Select
+        value = {String(formData.userId)}
           onValueChange={(value) =>
             handleChange("userId", Number(value))
           }
@@ -136,6 +147,7 @@ const AddTaskForm = ({ task, onOpenChange }) => {
         <Label className="font-medium">Priority</Label>
 
         <Select
+          value={formData.priority}
           onValueChange={(value) =>
             handleChange("priority", value)
           }
@@ -159,6 +171,7 @@ const AddTaskForm = ({ task, onOpenChange }) => {
         <Label className="font-medium">Status</Label>
 
         <Select
+          value = {formData.status}
           onValueChange={(value) =>
             handleChange("status", value)
           }

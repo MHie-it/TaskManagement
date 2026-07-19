@@ -9,15 +9,24 @@ import TeamSearchBar from '@/components/team/TeamSearchBar'
 import AddTeamDialog from '@/components/team/AddTeamDialog'
 import EditTeamDialog from '@/components/team/EditTeamDialog'
 import TeamMembersDialog from '@/components/team/TeamMembersDialog'
-import {
-  MOCK_TEAMS,
-  MOCK_USERS,
-  buildTeamStats,
-  buildTeamsWithMembers,
-  getUsersByTeamId,
-} from '@/data/mockTeams'
 import AddTeamMemberDialog from '@/components/team/AddTeamMemberDialog'
 import { TeamService } from '@/services/TeamService'
+import { UserService } from '@/services/UserService'
+
+const normalizeTeams = (data = []) =>
+  data.map((team) => ({
+    teamId: team.teamId ?? team.TeamId,
+    name: team.name ?? team.Name,
+    description: team.description ?? team.Description,
+  }))
+
+const normalizeUsers = (data = []) =>
+  data.map((user) => ({
+    UserId: user.UserId ?? user.userId,
+    TeamId: user.TeamId ?? user.teamId,
+    FullName: user.FullName ?? user.fullName,
+    Email: user.Email ?? user.email,
+  }))
 
 const TeamPage = () => {
   const [addOpen, setAddOpen] = useState(false)
@@ -26,47 +35,49 @@ const TeamPage = () => {
   const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [teams, setTeams] = useState([])
-  const [users, setUsers] = useState(MOCK_USERS)
+  const [users, setUsers] = useState([])
   const [selectedTeam, setSelectedTeam] = useState(null)
   const [editingTeam, setEditingTeam] = useState(null)
-  const teamsWithMembers = teams
+  const [selectedMembers, setSelectedMembers] = useState([])
 
   const stats = {
     totalTeams: teams.length,
     totalMembers: users.length,
-  }
-
-  const syncSelectedTeam = (updatedTeams) => {
-    if (!selectedTeam) return null
-
-    const freshTeam = buildTeamsWithMembers(updatedTeams, users).find(
-      (team) => team.teamId === selectedTeam.teamId
-    )
-
-    if (freshTeam) {
-      setSelectedTeam(freshTeam)
-    }
-
-    return freshTeam
+    avgMembers: teams.length ? Math.round(users.length / teams.length) : 0,
+    largestTeam: teams.length
+      ? Math.max(...teams.map((team) => team.memberCount ?? 0))
+      : 0,
   }
 
   const handleOpenAddTeamMember = () => {
     setAddMemberOpen(true)
   }
 
-  const handleAddMember = ({ userId, teamId }) => {
+  const handleAddMember = async ({ userId, teamId }) => {
     if (!userId || !teamId) return
 
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.UserId === userId ? { ...user, TeamId: teamId } : user
-      )
-    )
-    setAddMemberOpen(false)
+    try {
+      await TeamService.addMember(userId, { TeamId: teamId })
+      const currentUsers = await fetchUsers()
+      await fetchTeams(currentUsers)
+      const members = await UserService.getAllUserByTeam(teamId)
+      setSelectedMembers(normalizeUsers(members))
+      setAddMemberOpen(false)
+      setMembersOpen(false)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  const handleTeamClick = (team) => {
+  const handleTeamClick = async (team) => {
     setSelectedTeam(team)
+    try {
+      const members = await UserService.getAllUserByTeam(team.teamId)
+      setSelectedMembers(normalizeUsers(members))
+    } catch (err) {
+      console.error(err)
+      setSelectedMembers([])
+    }
     setMembersOpen(true)
   }
 
@@ -82,59 +93,69 @@ const TeamPage = () => {
     handleEditTeam(selectedTeam)
   }
 
-  const selectedMembers = selectedTeam
-    ? getUsersByTeamId(users, selectedTeam.teamId)
-    : []
-
-  ///---------------------
-
-  useEffect(() => { fetchTeams(); }, []);
-
-  const fetchTeams = async () => {
-    const data = await TeamService.getAllTeam();
-    setTeams(data);
+  const fetchUsers = async () => {
+    const data = await UserService.getAllUser()
+    const normalized = normalizeUsers(data)
+    setUsers(normalized)
+    return normalized
   }
 
+  const fetchTeams = async (currentUsers = users) => {
+    const data = await TeamService.getAllTeam()
+    const normalizedTeams = normalizeTeams(data)
+    const updatedTeams = normalizedTeams.map((team) => ({
+      ...team,
+      memberCount: currentUsers.filter((user) => user.TeamId === team.teamId).length,
+    }))
+    setTeams(updatedTeams)
+  }
+
+  useEffect(() => {
+    const loadData = async () => {
+      const currentUsers = await fetchUsers()
+      await fetchTeams(currentUsers)
+    }
+    loadData()
+  }, [])
+
   const handleSearch = async (value) => {
-    setSearch(value);
-    if (value.trim() === "") {
-      fetchTeams();
-      return;
+    setSearch(value)
+    if (value.trim() === '') {
+      await fetchTeams(users)
+      return
     }
 
-    const result = await TeamService.getTeamByName(value);
-    setTeams(result);
+    const result = await TeamService.getTeamByName(value)
+    const normalizedTeams = normalizeTeams(result)
+    const updatedTeams = normalizedTeams.map((team) => ({
+      ...team,
+      memberCount: users.filter((user) => user.TeamId === team.teamId).length,
+    }))
+    setTeams(updatedTeams)
   }
 
   const handleAddTeam = async (newTeam) => {
     try {
-      await TeamService.addTeam(newTeam);
-      fetchTeams();
-      setAddOpen(false);
+      await TeamService.addTeam(newTeam)
+      await fetchTeams()
+      setAddOpen(false)
+    } catch (err) {
+      console.log(err)
     }
-    catch (err) {
-      console.log(err);
-    }
-
   }
 
   const handleUpdateTeam = async (updatedTeam) => {
-    if (!editingTeam) return;
+    if (!editingTeam) return
 
     try {
-      await TeamService.updateTeam(
-        editingTeam.teamId,
-        updatedTeam
-      );
-
-      await fetchTeams();
-      setEditOpen(false);
-      setEditingTeam(null);
-
+      await TeamService.updateTeam(editingTeam.teamId, updatedTeam)
+      await fetchTeams()
+      setEditOpen(false)
+      setEditingTeam(null)
     } catch (err) {
-      console.log(err);
+      console.log(err)
     }
-  };
+  }
 
   return (
     <Background>

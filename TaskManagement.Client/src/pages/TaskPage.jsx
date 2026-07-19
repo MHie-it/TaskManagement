@@ -5,27 +5,41 @@ import AddTaskDialog from '@/components/task/AddTaskDialog'
 import TaskBoard from '@/components/task/TaskBoard'
 import { Button } from '@/components/ui/button'
 import { MOCK_TASKS } from '@/data/mockTasks'
+import { TaskService } from '@/services/TaskService'
 import { Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const TaskPage = () => {
   const [filter, setFilter] = useState('All')
   const [open, setOpen] = useState(false)
+  const [task, setTask] = useState([])
   const [selectedTask, setSelectedTask] = useState(null)
 
   const filteredTasks =
     filter === 'All'
-      ? MOCK_TASKS
-      : MOCK_TASKS.filter((t) => t.status === filter)
+      ? task
+      : task.filter((t) => t.status === filter)
 
   const stats = {
-    total: MOCK_TASKS.length,
-    inProgress: MOCK_TASKS.filter((t) => t.status === 'In Progress').length,
-    done: MOCK_TASKS.filter((t) => t.status === 'Done').length,
-    overdue: MOCK_TASKS.filter(
+    total: task.length,
+    inProgress: task.filter((t) => t.status === 'In Progress').length,
+    done: task.filter((t) => t.status === 'Done').length,
+    overdue: task.filter(
       (t) => t.status !== 'Done' && new Date(t.dueDate) < new Date()
     ).length,
   }
+
+  useEffect(() => { fetchTasks() }, []);
+
+  const fetchTasks = async () => {
+    const data = await TaskService.getAllTask();
+    setTask(data);
+  }
+
+  const handleSuccess = async () => {
+    await fetchTasks();
+    setSelectedTask(null);
+  };
 
   return (
     <Background>
@@ -46,7 +60,17 @@ const TaskPage = () => {
           </Button>
         </section>
 
-        <AddTaskDialog open={open} onOpenChange={setOpen} task={selectedTask} />
+        <AddTaskDialog
+          open={open}
+          onOpenChange={(value) => {
+            setOpen(value);
+            if(!value){
+              setSelectedTask(null);
+            }
+          }}
+          task={selectedTask}
+          onSuccess={fetchTasks}
+        />
 
         <StatSection stats={stats} />
 

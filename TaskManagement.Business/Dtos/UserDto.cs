@@ -9,6 +9,10 @@ namespace TaskManagement.Business.Dtos
 {
     public class UserDto
     {
+        public int UserId { get; set; }
+
+        public int? TeamId { get; set; }
+
         public string FullName { get; set; }
 
         public string Email { get; set; }
