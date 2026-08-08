@@ -13,23 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Status } from "@/constracts/StatusConfig";
 import { Priority } from "@/constracts/PriorityConfig";
 import { TaskService } from "@/services/TaskService";
-
-const MOCK_USERS = [
-  {
-    id: 1,
-    fullName: "Nguyễn Văn A",
-  },
-  {
-    id: 2,
-    fullName: "Trần Thị B",
-  },
-  {
-    id: 3,
-    fullName: "Lê Minh Hiệp",
-  },
-];
+import { UserService } from "@/services/UserService";
 
 const AddTaskForm = ({ task, onOpenChange, onSuccess }) => {
+  const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     userId: "",
     title: "",
@@ -40,6 +27,18 @@ const AddTaskForm = ({ task, onOpenChange, onSuccess }) => {
     priority: "",
     status: "",
   });
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await UserService.getAllUser();
+        setUsers(data || []);
+      } catch (err) {
+        console.error("Failed to load users:", err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     if (task) {
@@ -118,14 +117,18 @@ const AddTaskForm = ({ task, onOpenChange, onSuccess }) => {
           </SelectTrigger>
 
           <SelectContent>
-            {MOCK_USERS.map((user) => (
-              <SelectItem
-                key={user.id}
-                value={String(user.id)}
-              >
-                {user.fullName}
-              </SelectItem>
-            ))}
+            {users.map((u) => {
+              const uId = u.UserId || u.userId;
+              const uName = u.FullName || u.fullName || u.UserName || u.userName;
+              return (
+                <SelectItem
+                  key={uId}
+                  value={String(uId)}
+                >
+                  {uName}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>

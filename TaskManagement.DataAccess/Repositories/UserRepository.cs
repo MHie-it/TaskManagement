@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TaskManagement.DataAccess.DBContext;
 using TaskManagement.DataAccess.Models;
 
@@ -38,7 +38,7 @@ namespace TaskManagement.DataAccess.Repositories
 
         public async Task<List<User>> GetAllUsersAsync()
         {
-            return await _dbContext.Users.AsNoTracking().ToListAsync();
+            return await _dbContext.Users.AsNoTracking().Where(u => !u.isDeleted).ToListAsync();
         }
 
         public async Task<User?> GetUserByIdAsync(int id)
@@ -48,7 +48,7 @@ namespace TaskManagement.DataAccess.Repositories
 
         public async Task<List<User>> GetAllUserByTeamAsync(int teamId)
         {
-            return await _dbContext.Users.AsNoTracking().Where(t => t.TeamId == teamId).ToListAsync();
+            return await _dbContext.Users.AsNoTracking().Where(t => t.TeamId == teamId && !t.isDeleted).ToListAsync();
         }
 
         public async Task<bool> AddUserAsync(User regisUser)

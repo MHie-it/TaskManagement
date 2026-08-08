@@ -3,7 +3,8 @@ import Background from '@/components/layout/Background'
 import Header from '@/components/layout/Header'
 import ProfileCard from '@/components/user/ProfileCard'
 import AddUserDialog from '@/components/user/AddUserDialog'
-import { MOCK_USERS, MOCK_TEAMS } from '@/data/mockTeams'
+import { UserService } from '@/services/UserService'
+import { TeamService } from '@/services/TeamService'
 import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import {
@@ -18,24 +19,80 @@ import {
   X,
   ArrowRight,
   Mail,
+  UserPlus,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+
+const normalizeUser = (u) => {
+  if (!u) return u
+  return {
+    ...u,
+    UserId: u.UserId ?? u.userId,
+    RoleId: u.RoleId ?? u.roleId ?? 2,
+    TeamId: u.TeamId ?? u.teamId ?? null,
+    UserName: u.UserName ?? u.userName ?? '',
+    FullName: u.FullName ?? u.fullName ?? '',
+    Email: u.Email ?? u.email ?? '',
+    Phone: u.Phone ?? u.phone ?? '',
+    Bod: u.Bod ?? u.bod ?? '',
+    Address: u.Address ?? u.address ?? '',
+    Gende: u.Gende ?? u.gende ?? 'Male',
+  }
+}
+
+const normalizeTeam = (t) => {
+  if (!t) return t
+  return {
+    ...t,
+    TeamId: t.TeamId ?? t.teamId,
+    Name: t.Name ?? t.name ?? '',
+    Description: t.Description ?? t.description ?? '',
+  }
+}
 
 const UserPage = () => {
-  const [users, setUsers] = useState(() => {
-    return MOCK_USERS.map((user, idx) => ({
-      ...user,
-      Phone: user.Phone || `098765432${idx}`,
-      Bod: user.Bod || `199${5 + (idx % 5)}-0${(idx % 9) + 1}-15`,
-      Address: user.Address || `${idx + 12} Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh`,
-      Gende: user.Gende || (idx % 2 === 0 ? 'Male' : 'Female'),
-    }))
-  })
-
-  const [teams] = useState(MOCK_TEAMS)
-  const [activeUserId, setActiveUserId] = useState(MOCK_USERS[0]?.UserId || 1)
+  const [users, setUsers] = useState([])
+  const [teams, setTeams] = useState([])
+  const [activeUserId, setActiveUserId] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [teamFilter, setTeamFilter] = useState('all') // 'all' | 'assigned' | 'unassigned'
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const fetchUsers = async () => {
+    try {
+      const data = await UserService.getAllUser()
+      const normalized = (data || []).map(normalizeUser)
+      setUsers(normalized)
+      if (normalized.length > 0) {
+        setActiveUserId((prev) => (normalized.some((u) => u.UserId === prev) ? prev : normalized[0].UserId))
+      } else {
+        setActiveUserId(null)
+      }
+    } catch (err) {
+      console.error('Lỗi nạp danh sách user:', err)
+      toast.error('Không thể tải danh sách người dùng từ server!')
+    }
+  }
+
+  const fetchTeams = async () => {
+    try {
+      const data = await TeamService.getAllTeam()
+      const normalized = (data || []).map(normalizeTeam)
+      setTeams(normalized)
+    } catch (err) {
+      console.error('Lỗi nạp danh sách team:', err)
+    }
+  }
+
+  useEffect(() => {
+    const initData = async () => {
+      setLoading(true)
+      await Promise.all([fetchUsers(), fetchTeams()])
+      setLoading(false)
+    }
+    initData()
+  }, [])
 
   const stats = useMemo(() => {
     const total = users.length
@@ -76,31 +133,51 @@ const UserPage = () => {
     users.find((u) => u.UserId === activeUserId) ||
     null
 
-  const handleSaveMock = (updatedUser) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.UserId === updatedUser.UserId ? updatedUser : u))
-    )
-    toast.success('Cập nhật hồ sơ cá nhân thành công!')
+  const handleSaveUser = async (updatedUser) => {
+    try {
+      const userId = updatedUser.UserId
+      const payload = {
+        FullName: updatedUser.FullName,
+        Email: updatedUser.Email,
+        Phone: updatedUser.Phone,
+        Bod: updatedUser.Bod || null,
+        Address: updatedUser.Address,
+        Gende: updatedUser.Gende,
+        TeamId: updatedUser.TeamId || null,
+      }
+      await UserService.updateUser(userId, payload)
+      toast.success('Cập nhật hồ sơ cá nhân thành công!')
+      await fetchUsers()
+    } catch (err) {
+      console.error('Lỗi cập nhật user:', err)
+      toast.error(err.message || 'Cập nhật hồ sơ thất bại!')
+    }
   }
 
-  const handleAddUserMock = (newUserPayload) => {
-    const newUser = {
-      UserId: Date.now(),
-      FullName: newUserPayload.fullName || newUserPayload.FullName || 'Thành viên mới',
-      UserName: newUserPayload.userName || newUserPayload.Email?.split('@')[0] || `user_${Date.now().toString().slice(-4)}`,
-      Email: newUserPayload.email || newUserPayload.Email || 'user@example.com',
-      Phone: newUserPayload.phone || newUserPayload.Phone || '0900000000',
-      TeamId: newUserPayload.teamId ? Number(newUserPayload.teamId) : null,
-      RoleId: newUserPayload.roleId ? Number(newUserPayload.roleId) : 2,
-      Bod: newUserPayload.bod || '2000-01-01',
-      Address: newUserPayload.address || 'TP. Hồ Chí Minh',
-      Gende: newUserPayload.gender || 'Male',
+  const handleAddUser = async (newUserPayload) => {
+    try {
+      await UserService.addUser(newUserPayload)
+      toast.success(`Đã thêm thành viên "${newUserPayload.FullName || newUserPayload.fullName}" thành công!`)
+      setIsAddUserOpen(false)
+      await fetchUsers()
+    } catch (err) {
+      console.error('Lỗi thêm user:', err)
+      toast.error(err.message || 'Thêm người dùng thất bại!')
     }
+  }
 
-    setUsers((prev) => [newUser, ...prev])
-    setActiveUserId(newUser.UserId)
-    setIsAddUserOpen(false)
-    toast.success(`Đã thêm thành viên "${newUser.FullName}" thành công!`)
+  const handleDeleteUser = async (userId) => {
+    try {
+      await UserService.deleteUser(userId)
+      toast.success('Xóa tài khoản người dùng thành công!')
+      if (activeUserId === userId) {
+        setActiveUserId(null)
+      }
+      await fetchUsers()
+    } catch (err) {
+      console.error('Lỗi xóa user:', err)
+      toast.error(err.message || 'Xóa người dùng thất bại!')
+    }
   }
 
   const getInitials = (name) => {
@@ -122,8 +199,23 @@ const UserPage = () => {
         <AddUserDialog
           open={isAddUserOpen}
           onOpenChange={setIsAddUserOpen}
-          onSubmit={handleAddUserMock}
+          onSubmit={handleAddUser}
         />
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-zinc-100 md:text-3xl">
+              Quản lý người dùng
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-zinc-400">
+              Quản lý thông tin các tài khoản, phân nhóm và hồ sơ cá nhân.
+            </p>
+          </div>
+          <Button className="gap-2 shrink-0 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setIsAddUserOpen(true)}>
+            <UserPlus className="size-4" />
+            Thêm User Mới
+          </Button>
+        </div>
 
         <div className="grid gap-6 lg:grid-cols-12 items-start">
 
@@ -188,7 +280,9 @@ const UserPage = () => {
 
               <CardContent className="p-0">
                 <div className="max-h-[640px] overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800/80">
-                  {filteredUsers.length > 0 ? (
+                  {loading ? (
+                    <div className="p-8 text-center text-xs text-slate-500">Đang tải danh sách...</div>
+                  ) : filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => {
                       const team = teams.find(
                         (t) => t.TeamId === user.TeamId || t.teamId === user.TeamId
@@ -266,10 +360,10 @@ const UserPage = () => {
                         <Sparkles className="size-7" />
                       </div>
                       <p className="font-semibold text-slate-800 dark:text-zinc-200 text-base">
-                        User not found!
+                        Không tìm thấy người dùng!
                       </p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 max-w-xs">
-                        No account matches the keyword. "{searchTerm}".
+                        Không có tài khoản nào phù hợp với từ khóa "{searchTerm}".
                       </p>
                     </div>
                   )}
@@ -283,7 +377,8 @@ const UserPage = () => {
               user={activeUser}
               teams={teams}
               users={users}
-              onSave={handleSaveMock}
+              onSave={handleSaveUser}
+              onDelete={handleDeleteUser}
               onSelectUser={setActiveUserId}
             />
           </div>

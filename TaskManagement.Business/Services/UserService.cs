@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using TaskManagement.Business.Dtos;
 using TaskManagement.Business.Interfaces;
 using TaskManagement.DataAccess.Models;
@@ -152,37 +152,46 @@ namespace TaskManagement.Business.Services
                     throw new KeyNotFoundException("User not found.");
                 }
 
-                var checkUserName = await _userRepository.GetUserAsync(request.UserName);
-                if (checkUserName != null && checkUserName.UserId != id)
+                if (!string.IsNullOrWhiteSpace(request.UserName))
                 {
-                    _logger.LogWarning("Username {UserName} already exists.", request.UserName);
-                    throw new InvalidOperationException("Username already exists.");
+                    var checkUserName = await _userRepository.GetUserAsync(request.UserName);
+                    if (checkUserName != null && checkUserName.UserId != id)
+                    {
+                        _logger.LogWarning("Username {UserName} already exists.", request.UserName);
+                        throw new InvalidOperationException("Username already exists.");
+                    }
                 }
 
-                var checkEmail = await _userRepository.GetMailAsync(request.Email);
-                if (checkEmail != null && checkEmail.UserId != id)
+                if (!string.IsNullOrWhiteSpace(request.Email))
                 {
-                    _logger.LogWarning("Email {Email} already exists.", request.Email);
-                    throw new InvalidOperationException("Email already exists.");
+                    var checkEmail = await _userRepository.GetMailAsync(request.Email);
+                    if (checkEmail != null && checkEmail.UserId != id)
+                    {
+                        _logger.LogWarning("Email {Email} already exists.", request.Email);
+                        throw new InvalidOperationException("Email already exists.");
+                    }
                 }
 
-                var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
-                if (checkPhone != null && checkPhone.UserId != id)
+                if (!string.IsNullOrWhiteSpace(request.Phone))
                 {
-                    _logger.LogWarning("Phone {Phone} already exists.", request.Phone);
-                    throw new InvalidOperationException("Phone already exists.");
+                    var checkPhone = await _userRepository.GetPhoneAsync(request.Phone);
+                    if (checkPhone != null && checkPhone.UserId != id)
+                    {
+                        _logger.LogWarning("Phone {Phone} already exists.", request.Phone);
+                        throw new InvalidOperationException("Phone already exists.");
+                    }
                 }
 
-                user.TeamId = request.TeamId ?? user.TeamId;
-                user.UserName = request.UserName ?? user.UserName;
-                user.HashPass = request.HashPass ?? user.HashPass;
-                user.FullName = request.FullName ?? user.FullName;
-                user.Email = request.Email ?? user.Email;
-                user.Phone = request.Phone ?? user.Phone;
-                user.Bod = request.Bod ?? user.Bod;
-                user.Address = request.Address ?? user.Address;
-                user.isDeleted = request.isDeleted ?? user.isDeleted;
-                user.Gende = request.Gende ?? user.Gende;
+                if (request.TeamId.HasValue) user.TeamId = request.TeamId;
+                if (!string.IsNullOrEmpty(request.UserName)) user.UserName = request.UserName;
+                if (!string.IsNullOrEmpty(request.HashPass)) user.HashPass = request.HashPass;
+                if (!string.IsNullOrEmpty(request.FullName)) user.FullName = request.FullName;
+                if (!string.IsNullOrEmpty(request.Email)) user.Email = request.Email;
+                if (request.Phone != null) user.Phone = request.Phone;
+                if (request.Bod.HasValue) user.Bod = request.Bod;
+                if (request.Address != null) user.Address = request.Address;
+                if (request.isDeleted.HasValue) user.isDeleted = request.isDeleted.Value;
+                if (request.Gende != null) user.Gende = request.Gende;
                 user.UpdateAudit(user.UserName);
 
                 var result = await _userRepository.UpdateUserAsync(user);
