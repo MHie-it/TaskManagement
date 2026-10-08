@@ -3,12 +3,12 @@ import { Card, CardContent } from '../ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { Button } from '../ui/button'
 import {
-  Shield, Users, Edit3, Save, X, Sparkles, UserCheck
+  Shield, Users, Edit3, Save, X, Sparkles, UserCheck, Trash2
 } from 'lucide-react'
 import InforCard from './InforCard'
 import EditInforCard from './EditInforCard'
 
-const ProfileCard = ({ user, teams = [], users = [], onSave, onSelectUser }) => {
+const ProfileCard = ({ user, teams = [], users = [], onSave, onDelete, onSelectUser }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     FullName: '',
@@ -124,14 +124,31 @@ const ProfileCard = ({ user, teams = [], users = [], onSave, onSelectUser }) => 
 
           <div className="mt-3 sm:mt-0 flex items-center gap-2">
             {!isEditing && (
-              <Button
-                onClick={() => setIsEditing(true)}
-                size="sm"
-                className="gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 text-white shadow-xs"
-              >
-                <Edit3 className="size-3.5" />
-                Update Profile
-              </Button>
+              <>
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  size="sm"
+                  className="gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 text-white shadow-xs"
+                >
+                  <Edit3 className="size-3.5" />
+                  Update Profile
+                </Button>
+                {onDelete && (
+                  <Button
+                    onClick={() => {
+                      if (window.confirm(`Bạn có chắc chắn muốn xóa user "${user.FullName}"?`)) {
+                        onDelete(user.UserId);
+                      }
+                    }}
+                    size="sm"
+                    variant="destructive"
+                    className="gap-1.5 shadow-xs"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Delete User
+                  </Button>
+                )}
+              </>
             )}
           </div>
         </div>

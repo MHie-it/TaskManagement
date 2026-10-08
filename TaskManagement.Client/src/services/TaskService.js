@@ -1,8 +1,10 @@
 import api from './api.js'
 
 export const TaskService = {
-    getAllTask: async () => {
-        const response = await api.get('/Task/GetAllTasks');
+    getAllTask: async (status) => {
+        const response = await api.get('/Task/GetAllTasks', {
+            params: status ? { Status: status } : {}
+        });
         return response.data;
     },
 
@@ -12,9 +14,7 @@ export const TaskService = {
     },
 
     updateTask: async (taskId, task) => {
-        const response = await api.put('/Task/UpdateTask', task, {
-            params: { Id : taskId }
-        });
+        const response = await api.put(`/Task/UpdateTask/${taskId}`, task);
         return response.data;
     }
 

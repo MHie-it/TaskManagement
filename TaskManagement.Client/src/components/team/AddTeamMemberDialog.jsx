@@ -25,14 +25,17 @@ const AddTeamMemberDialog = ({ open, onOpenChange, team, users, onSubmit }) => {
     }, [open])
 
     const availableUsers = team
-        ? users.filter((user) => user.TeamId !== team.teamId)
+        ? users.filter((user) => {
+            const teamId = user.TeamId ?? user.teamId
+            return !teamId
+        })
         : []
 
     const handleSubmit = () => {
         if (!selectedUserId || !team) return
         onSubmit?.({
             userId: Number(selectedUserId),
-            teamId: team.teamId,
+            teamId: team.teamId ?? team.TeamId,
         })
     }
 
@@ -40,26 +43,26 @@ const AddTeamMemberDialog = ({ open, onOpenChange, team, users, onSubmit }) => {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>Add Member to {team?.name ?? 'Team'}</DialogTitle>
+                    <DialogTitle>Add Member to {team?.name ?? team?.Name ?? 'Team'}</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-5">
                     <div className="space-y-2">
-                        <Label>Chọn thành viên</Label>
+                        <Label>Chọn thành viên (Chưa có team)</Label>
                         <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select a user" />
+                                <SelectValue placeholder="Chọn người dùng chưa có team" />
                             </SelectTrigger>
                             <SelectContent>
                                 {availableUsers.length > 0 ? (
                                     availableUsers.map((user) => (
-                                        <SelectItem key={user.UserId} value={String(user.UserId)}>
-                                            {user.FullName} — {user.Email}
+                                        <SelectItem key={user.UserId ?? user.userId} value={String(user.UserId ?? user.userId)}>
+                                            {user.FullName ?? user.fullName} — {user.Email ?? user.email}
                                         </SelectItem>
                                     ))
                                 ) : (
-                                    <SelectItem value="" disabled>
-                                        No available users
+                                    <SelectItem value="no-users" disabled>
+                                        Không có người dùng nào chưa thuộc team
                                     </SelectItem>
                                 )}
                             </SelectContent>
