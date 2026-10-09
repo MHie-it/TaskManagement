@@ -191,7 +191,7 @@ namespace TaskManagement.Business.Services
                 if (request.Bod.HasValue) user.Bod = request.Bod;
                 if (request.Address != null) user.Address = request.Address;
                 if (request.isDeleted.HasValue) user.isDeleted = request.isDeleted.Value;
-                if (request.Gende != null) user.Gende = request.Gende;
+                if (request.Gender != null) user.Gende = request.Gender;
                 user.UpdateAudit(user.UserName);
 
                 var result = await _userRepository.UpdateUserAsync(user);

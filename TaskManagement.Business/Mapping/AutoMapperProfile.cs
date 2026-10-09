@@ -15,9 +15,9 @@ namespace TaskManagement.Business.Mapping
             CreateMap<UserDto, User>();
             CreateMap<User, UserDto>();
             CreateMap<AddUserDto, User>()
-                .ForMember(dest => dest.Gende, opt => opt.MapFrom(src => src.Gende ?? src.Gender));
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender ?? src.Gender));
             CreateMap<AddUserToTeamDto, User>();
-            CreateMap< User, AddUserToTeamDto>();
+            CreateMap<User, AddUserToTeamDto>();
 
             CreateMap<TaskDto, Task>(); 
             CreateMap<Task, TaskDto>();

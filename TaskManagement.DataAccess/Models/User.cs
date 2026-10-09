@@ -30,7 +30,7 @@ namespace TaskManagement.DataAccess.Models
 
         public bool isDeleted { get; set; }
 
-        public string? Gende { get; set; }
+        public string? Gender { get; set; }
 
         public Role Role { get; set; }
 

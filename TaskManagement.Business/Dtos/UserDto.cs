@@ -27,7 +27,7 @@ namespace TaskManagement.Business.Dtos
 
         public string? Address { get; set; }
 
-        public string? Gende { get; set; }
+        public string? Gender { get; set; }
     }
 
     public class AddUserDto
@@ -41,8 +41,6 @@ namespace TaskManagement.Business.Dtos
         public string Email { get; set; }
 
         public string? Gender { get; set; }
-
-        public string? Gende { get; set; }
     }
 
     public class UpdateUserDto
@@ -65,7 +63,7 @@ namespace TaskManagement.Business.Dtos
 
         public bool? isDeleted { get; set; }
 
-        public string? Gende { get; set; }
+        public string? Gender { get; set; }
     }
 
     public class AddUserToTeamDto
